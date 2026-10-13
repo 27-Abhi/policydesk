@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
     "langgraph",
     "pydantic>=2.0.0",
+    "nltk"
 ]
 
 [project.optional-dependencies]

@@ -3,13 +3,9 @@ import re
 from collections import Counter
 from typing import Any, Optional
 
+from nltk.corpus import stopwords
 
-STOPWORDS = {
-    "a", "an", "the", "and", "or", "in", "on", "at", "to", "for", "of", "with",
-    "by", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had",
-    "do", "does", "did", "what", "which", "who", "whom", "this", "that", "these",
-    "those", "am", "it", "its", "as", "if", "from", "my", "your", "our", "their",
-}
+STOPWORDS = set(stopwords.words("english"))
 
 
 def _stem(word: str) -> str:
