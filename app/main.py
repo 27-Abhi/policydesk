@@ -1,6 +1,32 @@
 """PolicyDesk application entry point."""
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.v1.router import api_v1_router
 from app.graph.graph import build_graph
+
+app = FastAPI(
+    title="PolicyDesk API",
+    description="Escalation-aware fintech policy support agent with LangGraph RAG",
+    version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_v1_router, prefix="/v1")
+app.include_router(api_v1_router, prefix="/api/v1")
+
+
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "ok", "app": "PolicyDesk"}
 
 
 def run_demo():
