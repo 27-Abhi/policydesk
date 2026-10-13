@@ -20,8 +20,19 @@ class PolicyDeskState(TypedDict, total=False):
         intent: Classified user intent, or None prior to classification.
         route: Name of the route/placeholder node reached.
         errors: List of validation or processing error messages encountered.
+        retrieved_docs: Parent policy chunks retrieved from vector store.
+        reranked_docs: Scored and reranked parent policy chunks.
+        relevance_score: Graded relevance score for retrieved chunks.
+        is_relevant: Boolean indicating if retrieved chunks meet relevance threshold.
+        answer: Synthesized response to the policy query.
     """
     user_input: str
     intent: Optional[Intent]
     route: Optional[str]
     errors: list[str]
+    retrieved_docs: list[str]
+    reranked_docs: list[str]
+    relevance_score: float
+    is_relevant: bool
+    answer: Optional[str]
+
