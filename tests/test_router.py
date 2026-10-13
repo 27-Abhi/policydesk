@@ -8,12 +8,12 @@ class TestRouter:
     @pytest.mark.parametrize(
         ("intent", "expected_node"),
         [
-            (Intent.POLICY_QUESTION, "policy_placeholder"),
+            (Intent.POLICY_QUESTION, "retrieve_parent_chunks"),
             (Intent.ACCOUNT_LOOKUP, "account_placeholder"),
             (Intent.DISPUTE_ACTION, "dispute_placeholder"),
             (Intent.HUMAN_REQUEST, "human_placeholder"),
             (Intent.OUT_OF_SCOPE, "out_of_scope_placeholder"),
-            ("policy_question", "policy_placeholder"),
+            ("policy_question", "retrieve_parent_chunks"),
             ("account_lookup", "account_placeholder"),
             ("dispute_action", "dispute_placeholder"),
             ("human_request", "human_placeholder"),
