@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import Optional
 from collections import Counter
@@ -5,6 +6,7 @@ from collections import Counter
 from app.graph.state import PolicyDeskState
 from app.rag.store import ParentChildVectorStore, get_default_vector_store, _tokenize, _cosine_similarity
 
+logger = logging.getLogger("policydesk.rag")
 _DEFAULT_STORE: Optional[ParentChildVectorStore] = None
 
 
@@ -25,6 +27,12 @@ def retrieve_parent_chunks(state: PolicyDeskState) -> dict:
     store = get_active_store()
     matched = store.retrieve(query, top_k=3)
     docs = [m["text"] for m in matched]
+
+    logger.info("[RAG:RETRIEVE] Query: %r -> Found %d parent chunk(s)", query, len(matched))
+    for idx, m in enumerate(matched, 1):
+        clean_preview = m["text"][:75].replace("\n", " ")
+        logger.info("  Chunk %d [%s] (Score: %.4f): %s...", idx, m["parent_id"], m["score"], clean_preview)
+
     return {"retrieved_docs": docs}
 
 
@@ -32,6 +40,7 @@ def grade_documents(state: PolicyDeskState) -> dict:
     query = state.get("user_input", "")
     docs = state.get("retrieved_docs") or []
     if not query or not docs:
+        logger.warning("[RAG:GRADE] Empty query or retrieved docs. Failing relevance check.")
         return {"relevance_score": 0.0, "is_relevant": False}
 
     query_vec = Counter(_tokenize(query))
@@ -43,8 +52,8 @@ def grade_documents(state: PolicyDeskState) -> dict:
         if score > best_score:
             best_score = score
 
-    # Threshold for policy relevance
     is_relevant = best_score >= 0.15
+    logger.info("[RAG:GRADE] Best score: %.4f (Threshold: 0.15, Relevant: %s)", best_score, is_relevant)
     return {
         "relevance_score": round(best_score, 4),
         "is_relevant": is_relevant,
@@ -55,6 +64,7 @@ def rerank_documents(state: PolicyDeskState) -> dict:
     query = state.get("user_input", "")
     docs = state.get("retrieved_docs") or []
     if not docs:
+        logger.info("[RAG:RERANK] No documents to rerank.")
         return {"reranked_docs": []}
 
     query_vec = Counter(_tokenize(query))
@@ -65,6 +75,7 @@ def rerank_documents(state: PolicyDeskState) -> dict:
         scored.append((score, doc))
 
     scored.sort(key=lambda x: x[0], reverse=True)
+    logger.info("[RAG:RERANK] Reranked %d chunk(s). Top score: %.4f", len(scored), scored[0][0])
     return {"reranked_docs": [doc for _, doc in scored]}
 
 
@@ -78,7 +89,9 @@ def generate_answer(state: PolicyDeskState) -> dict:
     else:
         answer = "No relevant policy documents found matching your inquiry."
 
+    logger.info("[RAG:GENERATE] Answer synthesized (Relevant: %s, Length: %d chars)", is_relevant, len(answer))
     return {
         "answer": answer,
         "route": "policy_question",
     }
+
