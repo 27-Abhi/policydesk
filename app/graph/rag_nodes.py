@@ -36,24 +36,20 @@ def retrieve_parent_chunks(state: PolicyDeskState) -> dict:
     return {"retrieved_docs": docs}
 
 
-def grade_documents(state: PolicyDeskState) -> dict:
-    query = state.get("user_input", "")
-    docs = state.get("retrieved_docs") or []
+def _score_docs(query: str, docs: list[str]) -> list[tuple[float, str]]:
     if not query or not docs:
-        logger.warning("[RAG:GRADE] Empty query or retrieved docs. Failing relevance check.")
-        return {"relevance_score": 0.0, "is_relevant": False}
+        return []
+    query_vec = dict(Counter(_tokenize(query)))
+    scored = [(_cosine_similarity(query_vec, dict(Counter(_tokenize(d)))), d) for d in docs]
+    return sorted(scored, key=lambda x: x[0], reverse=True)
 
-    query_vec = Counter(_tokenize(query))
-    best_score = 0.0
 
-    for doc in docs:
-        doc_vec = Counter(_tokenize(doc))
-        score = _cosine_similarity(dict(query_vec), dict(doc_vec))
-        if score > best_score:
-            best_score = score
-
+def grade_documents(state: PolicyDeskState) -> dict:
+    query, docs = state.get("user_input", ""), state.get("retrieved_docs") or []
+    scored = _score_docs(query, docs)
+    best_score = scored[0][0] if scored else 0.0
     is_relevant = best_score >= 0.15
-    logger.info("[RAG:GRADE] Best score: %.4f (Threshold: 0.15, Relevant: %s)", best_score, is_relevant)
+    logger.info("[RAG:GRADE] Best score: %.4f (Relevant: %s)", best_score, is_relevant)
     return {
         "relevance_score": round(best_score, 4),
         "is_relevant": is_relevant,
@@ -61,21 +57,9 @@ def grade_documents(state: PolicyDeskState) -> dict:
 
 
 def rerank_documents(state: PolicyDeskState) -> dict:
-    query = state.get("user_input", "")
-    docs = state.get("retrieved_docs") or []
-    if not docs:
-        logger.info("[RAG:RERANK] No documents to rerank.")
-        return {"reranked_docs": []}
-
-    query_vec = Counter(_tokenize(query))
-    scored = []
-    for doc in docs:
-        doc_vec = Counter(_tokenize(doc))
-        score = _cosine_similarity(dict(query_vec), dict(doc_vec))
-        scored.append((score, doc))
-
-    scored.sort(key=lambda x: x[0], reverse=True)
-    logger.info("[RAG:RERANK] Reranked %d chunk(s). Top score: %.4f", len(scored), scored[0][0])
+    query, docs = state.get("user_input", ""), state.get("retrieved_docs") or []
+    scored = _score_docs(query, docs)
+    logger.info("[RAG:RERANK] Reranked %d chunk(s)", len(scored))
     return {"reranked_docs": [doc for _, doc in scored]}
 
 

@@ -8,7 +8,7 @@ from fastapi.responses import StreamingResponse
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
-from app.api.deps import get_graph
+from app.graph.graph import get_graph
 from app.api.schemas import (
     ChatCompletionChoice,
     ChatCompletionChunk,

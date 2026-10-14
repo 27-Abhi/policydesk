@@ -1,4 +1,5 @@
 import uuid
+from functools import lru_cache
 from typing import Any, Optional
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
@@ -93,5 +94,11 @@ def build_graph(checkpointer: Optional[Any] = None):
 
     compiled.invoke = safe_invoke
     return compiled
+
+
+@lru_cache(maxsize=1)
+def get_graph():
+    """Return the cached singleton compiled graph instance."""
+    return build_graph()
 
 

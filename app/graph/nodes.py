@@ -98,26 +98,6 @@ def classify_intent(state: PolicyDeskState) -> dict:
     return {"intent": intent.value}
 
 
-def policy_placeholder(state: PolicyDeskState) -> dict:
-    """Terminal placeholder node for policy inquiries."""
-    return {"route": "policy_question"}
-
-
-def account_placeholder(state: PolicyDeskState) -> dict:
-    """Terminal placeholder node for account inquiries."""
-    return {"route": "account_lookup"}
-
-
-def dispute_placeholder(state: PolicyDeskState) -> dict:
-    """Terminal placeholder node for dispute actions."""
-    return {"route": "dispute_action"}
-
-
-def human_placeholder(state: PolicyDeskState) -> dict:
-    """Terminal placeholder node for human escalation requests."""
-    return {"route": "human_request"}
-
-
 def out_of_scope_placeholder(state: PolicyDeskState) -> dict:
     """Terminal placeholder node for out-of-scope / fallback requests."""
     return {"route": "out_of_scope"}

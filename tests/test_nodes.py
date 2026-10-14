@@ -1,12 +1,8 @@
 import pytest
 
 from app.graph.nodes import (
-    account_placeholder,
     classify_intent,
-    dispute_placeholder,
-    human_placeholder,
     out_of_scope_placeholder,
-    policy_placeholder,
     sanitize,
 )
 from app.graph.state import Intent
@@ -64,17 +60,5 @@ class TestClassifyIntentNode:
 
 
 class TestPlaceholderNodes:
-    def test_policy_placeholder(self):
-        assert policy_placeholder({}) == {"route": "policy_question"}
-
-    def test_account_placeholder(self):
-        assert account_placeholder({}) == {"route": "account_lookup"}
-
-    def test_dispute_placeholder(self):
-        assert dispute_placeholder({}) == {"route": "dispute_action"}
-
-    def test_human_placeholder(self):
-        assert human_placeholder({}) == {"route": "human_request"}
-
     def test_out_of_scope_placeholder(self):
         assert out_of_scope_placeholder({}) == {"route": "out_of_scope"}
