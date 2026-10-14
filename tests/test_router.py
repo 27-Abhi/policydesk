@@ -9,14 +9,14 @@ class TestRouter:
         ("intent", "expected_node"),
         [
             (Intent.POLICY_QUESTION, "retrieve_parent_chunks"),
-            (Intent.ACCOUNT_LOOKUP, "account_placeholder"),
+            (Intent.ACCOUNT_LOOKUP, "handle_account_lookup"),
             (Intent.DISPUTE_ACTION, "extract_dispute_details"),
-            (Intent.HUMAN_REQUEST, "human_placeholder"),
+            (Intent.HUMAN_REQUEST, "handle_human_escalation"),
             (Intent.OUT_OF_SCOPE, "out_of_scope_placeholder"),
             ("policy_question", "retrieve_parent_chunks"),
-            ("account_lookup", "account_placeholder"),
+            ("account_lookup", "handle_account_lookup"),
             ("dispute_action", "extract_dispute_details"),
-            ("human_request", "human_placeholder"),
+            ("human_request", "handle_human_escalation"),
             ("out_of_scope", "out_of_scope_placeholder"),
         ],
     )

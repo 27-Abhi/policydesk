@@ -45,5 +45,11 @@ class PolicyDeskState(TypedDict, total=False):
     dispute_status: Optional[str]
     dispute_comments: Optional[str]
     dispute_notification_sent: Optional[bool]
+    auth_step: Optional[str]
+    auth_phone: Optional[str]
+    authenticated: Optional[bool]
+    account_number: Optional[str]
+    escalation_ticket_id: Optional[str]
+    escalation_priority: Optional[str]
 
 

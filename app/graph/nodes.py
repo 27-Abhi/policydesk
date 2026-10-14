@@ -61,7 +61,7 @@ def _deterministic_classify(text: str) -> Intent:
     if any(k in text_lower for k in policy_keywords):
         return Intent.POLICY_QUESTION
 
-    if any(k in text_lower for k in ("account", "balance", "statement")):
+    if any(k in text_lower for k in ("account", "balance", "statement", "transaction", "transactions", "charges")):
         return Intent.ACCOUNT_LOOKUP
 
     return Intent.OUT_OF_SCOPE
@@ -76,7 +76,23 @@ def classify_intent(state: PolicyDeskState) -> dict:
         logger.warning("[INTENT] State has errors. Failing safe to OUT_OF_SCOPE.")
         return {"intent": Intent.OUT_OF_SCOPE.value}
 
+    auth_step = state.get("auth_step")
+    authenticated = bool(state.get("authenticated", False))
     user_input = state.get("user_input", "")
+    lower = user_input.lower()
+
+    # Preserve account lookup flow during multi-turn 2FA unless user asks to cancel/escalate
+    if auth_step in ("awaiting_phone", "awaiting_otp"):
+        if not any(w in lower for w in ("cancel", "stop", "never mind", "agent", "human", "representative")):
+            logger.info("[INTENT] Preserving ACCOUNT_LOOKUP for active 2FA step (%s)", auth_step)
+            return {"intent": Intent.ACCOUNT_LOOKUP.value}
+
+    # In an authenticated session, keep inquiries about transactions/balance in account lookup
+    if authenticated and any(w in lower for w in ("transaction", "transactions", "balance", "account", "statement", "charges", "recent")):
+        if not any(w in lower for w in ("dispute", "fraud", "unauthorized", "agent", "human", "representative")):
+            logger.info("[INTENT] Retaining ACCOUNT_LOOKUP for authenticated customer query")
+            return {"intent": Intent.ACCOUNT_LOOKUP.value}
+
     intent = _deterministic_classify(user_input)
     logger.info("[INTENT] Classified '%s...' -> %s", user_input[:40], intent.value)
     return {"intent": intent.value}

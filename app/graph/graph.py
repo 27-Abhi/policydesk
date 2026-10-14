@@ -4,15 +4,15 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 
+from app.graph.account_nodes import handle_account_lookup
 from app.graph.dispute_nodes import (
     extract_dispute_details,
     finalize_dispute,
     require_human_approval,
 )
+from app.graph.escalation_nodes import handle_human_escalation
 from app.graph.nodes import (
-    account_placeholder,
     classify_intent,
-    human_placeholder,
     out_of_scope_placeholder,
     sanitize,
 )
@@ -39,8 +39,8 @@ def build_graph(checkpointer: Optional[Any] = None):
     builder.add_node("extract_dispute_details", extract_dispute_details)
     builder.add_node("require_human_approval", require_human_approval)
     builder.add_node("finalize_dispute", finalize_dispute)
-    builder.add_node("account_placeholder", account_placeholder)
-    builder.add_node("human_placeholder", human_placeholder)
+    builder.add_node("handle_account_lookup", handle_account_lookup)
+    builder.add_node("handle_human_escalation", handle_human_escalation)
     builder.add_node("out_of_scope_placeholder", out_of_scope_placeholder)
 
     builder.add_edge(START, "sanitize")
@@ -52,8 +52,8 @@ def build_graph(checkpointer: Optional[Any] = None):
         {
             "retrieve_parent_chunks": "retrieve_parent_chunks",
             "extract_dispute_details": "extract_dispute_details",
-            "account_placeholder": "account_placeholder",
-            "human_placeholder": "human_placeholder",
+            "handle_account_lookup": "handle_account_lookup",
+            "handle_human_escalation": "handle_human_escalation",
             "out_of_scope_placeholder": "out_of_scope_placeholder",
         },
     )
@@ -69,8 +69,8 @@ def build_graph(checkpointer: Optional[Any] = None):
     builder.add_edge("require_human_approval", "finalize_dispute")
     builder.add_edge("finalize_dispute", END)
 
-    builder.add_edge("account_placeholder", END)
-    builder.add_edge("human_placeholder", END)
+    builder.add_edge("handle_account_lookup", END)
+    builder.add_edge("handle_human_escalation", END)
     builder.add_edge("out_of_scope_placeholder", END)
 
     if checkpointer is None:
