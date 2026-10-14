@@ -123,3 +123,22 @@ class TestEndToEndPolicyRAGGraph:
         assert len(result["retrieved_docs"]) > 0
         assert len(result["reranked_docs"]) > 0
         assert "$45" in result["answer"]
+
+    def test_natural_policy_query_without_policy_keyword(self):
+        graph = build_graph()
+        result = graph.invoke({"user_input": "What is the fee for an international wire transfer?"})
+
+        assert result["intent"] == Intent.POLICY_QUESTION
+        assert result["route"] == "policy_question"
+        assert result["is_relevant"] is True
+        assert "$45" in result["answer"]
+
+    def test_pdf_ingested_policy_query(self):
+        graph = build_graph()
+        result = graph.invoke({"user_input": "What are the rules for opening minor accounts?"})
+
+        assert result["intent"] == Intent.POLICY_QUESTION
+        assert result["route"] == "policy_question"
+        assert result["is_relevant"] is True
+        assert any("minor" in doc.lower() for doc in result["retrieved_docs"])
+

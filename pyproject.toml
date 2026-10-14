@@ -11,7 +11,10 @@ requires-python = ">=3.10"
 dependencies = [
     "langgraph",
     "pydantic>=2.0.0",
-    "nltk"
+    "nltk",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pypdf>=5.0.0",
 ]
 
 [project.optional-dependencies]

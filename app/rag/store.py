@@ -175,6 +175,8 @@ DEFAULT_POLICIES = [
 
 
 def get_default_vector_store() -> ParentChildVectorStore:
+    from pathlib import Path
+
     store = ParentChildVectorStore()
     for policy in DEFAULT_POLICIES:
         store.add_document(
@@ -182,4 +184,13 @@ def get_default_vector_store() -> ParentChildVectorStore:
             title=policy["title"],
             text=policy["text"],
         )
+
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    policies_dir = base_dir / "data" / "policies"
+    if policies_dir.exists():
+        from app.rag.ingest import ingest_policies_directory
+
+        ingest_policies_directory(store, policies_dir)
+
     return store
+

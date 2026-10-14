@@ -32,17 +32,32 @@ def _deterministic_classify(text: str) -> Intent:
     """Classify input text using deterministic keyword rules."""
     text_lower = text.lower()
 
-    if "policy" in text_lower or "rules" in text_lower:
+    if any(k in text_lower for k in ("human", "agent", "representative", "speak to", "support person", "operator")):
+        return Intent.HUMAN_REQUEST
+
+    # Inquiries explicitly referencing policy or rules route to policy question
+    if "policy" in text_lower or "rules" in text_lower or "guidelines" in text_lower:
         return Intent.POLICY_QUESTION
 
-    if any(k in text_lower for k in ("dispute", "chargeback", "fraud")):
+    if any(k in text_lower for k in ("dispute", "chargeback", "fraud", "unauthorized")):
         return Intent.DISPUTE_ACTION
+
+    if any(k in text_lower for k in ("account balance", "my balance", "account statement", "my account", "transaction history")):
+        return Intent.ACCOUNT_LOOKUP
+
+    policy_keywords = (
+        "fee", "fees", "cost", "cutoff", "cut-off", "limit", "limits",
+        "wire", "transfer", "wires", "transfers", "deposit", "deposits",
+        "withdrawal", "withdrawals", "hold", "holds", "overdraft",
+        "penalty", "requirement", "requirements", "minimum", "eligibility",
+        "terms", "interest", "apy", "fdic", "dormant", "minor", "nomination",
+        "nominee", "inoperative", "unclaimed", "savings account", "checking account"
+    )
+    if any(k in text_lower for k in policy_keywords):
+        return Intent.POLICY_QUESTION
 
     if any(k in text_lower for k in ("account", "balance", "statement")):
         return Intent.ACCOUNT_LOOKUP
-
-    if any(k in text_lower for k in ("human", "agent", "representative", "speak to", "support person")):
-        return Intent.HUMAN_REQUEST
 
     return Intent.OUT_OF_SCOPE
 
