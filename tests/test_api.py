@@ -76,3 +76,23 @@ class TestChatCompletionsAPI:
         }
         response = client.post("/v1/chat/completions", json=payload)
         assert response.status_code == 422
+
+    def test_debug_chat_query_observability(self, client):
+        payload = {
+            "messages": [
+                {"role": "user", "content": "What are the rules for opening minor accounts?"}
+            ]
+        }
+        response = client.post("/v1/chat/debug", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["intent"] == "policy_question"
+        assert data["route"] == "policy_question"
+        assert data["is_relevant"] is True
+        assert data["relevance_score"] > 0
+        assert len(data["retrieved_docs"]) > 0
+        assert len(data["reranked_docs"]) > 0
+        assert any("minor" in doc.lower() for doc in data["retrieved_docs"])
+        assert "minor" in data["answer"].lower()
+

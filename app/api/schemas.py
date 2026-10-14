@@ -61,3 +61,32 @@ class ChatCompletionChunk(BaseModel):
     created: int
     model: str = "policydesk"
     choices: list[ChatCompletionChunkChoice]
+
+
+class ChatDebugResponse(BaseModel):
+    user_input: str
+    intent: Optional[str] = None
+    route: Optional[str] = None
+    is_relevant: Optional[bool] = None
+    relevance_score: Optional[float] = None
+    retrieved_docs: list[str] = []
+    reranked_docs: list[str] = []
+    answer: Optional[str] = None
+    errors: list[str] = []
+
+
+class DisputeReviewRequest(BaseModel):
+    approved: bool = Field(..., description="Whether compliance approves the dispute")
+    comments: Optional[str] = Field(default="", description="Review comments or rejection reason")
+
+
+class DisputeReviewResponse(BaseModel):
+    thread_id: str
+    dispute_id: str
+    transaction_id: str
+    dispute_status: str
+    dispute_comments: Optional[str] = None
+    dispute_notification_sent: bool
+    answer: str
+
+
