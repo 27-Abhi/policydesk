@@ -5,7 +5,7 @@ from app.graph.state import Intent, PolicyDeskState
 ROUTE_MAP = {
     Intent.POLICY_QUESTION: "retrieve_parent_chunks",
     Intent.ACCOUNT_LOOKUP: "account_placeholder",
-    Intent.DISPUTE_ACTION: "dispute_placeholder",
+    Intent.DISPUTE_ACTION: "extract_dispute_details",
     Intent.HUMAN_REQUEST: "human_placeholder",
     Intent.OUT_OF_SCOPE: "out_of_scope_placeholder",
 }

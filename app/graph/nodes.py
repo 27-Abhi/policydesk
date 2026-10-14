@@ -1,6 +1,8 @@
-"""Graph nodes for PolicyDesk workflow."""
+import logging
 
 from app.graph.state import Intent, PolicyDeskState
+
+logger = logging.getLogger("policydesk.nodes")
 
 
 def sanitize(state: PolicyDeskState) -> dict:
@@ -12,6 +14,7 @@ def sanitize(state: PolicyDeskState) -> dict:
 
     if not isinstance(raw_input, str):
         existing_errors = list(state.get("errors") or [])
+        logger.warning("Sanitize rejected non-string input: %r", type(raw_input))
         return {
             "user_input": "",
             "errors": existing_errors + ["User input must be a non-empty string."],
@@ -20,11 +23,13 @@ def sanitize(state: PolicyDeskState) -> dict:
     cleaned = raw_input.strip()
     if not cleaned:
         existing_errors = list(state.get("errors") or [])
+        logger.warning("Sanitize rejected blank or empty input.")
         return {
             "user_input": "",
             "errors": existing_errors + ["User input cannot be empty or blank."],
         }
 
+    logger.info("Sanitized user input (%d chars): %r", len(cleaned), cleaned[:50])
     return {"user_input": cleaned}
 
 
@@ -68,11 +73,13 @@ def classify_intent(state: PolicyDeskState) -> dict:
     Fails safe to OUT_OF_SCOPE if errors exist or text is unrecognized.
     """
     if state.get("errors"):
-        return {"intent": Intent.OUT_OF_SCOPE}
+        logger.warning("[INTENT] State has errors. Failing safe to OUT_OF_SCOPE.")
+        return {"intent": Intent.OUT_OF_SCOPE.value}
 
     user_input = state.get("user_input", "")
     intent = _deterministic_classify(user_input)
-    return {"intent": intent}
+    logger.info("[INTENT] Classified '%s...' -> %s", user_input[:40], intent.value)
+    return {"intent": intent.value}
 
 
 def policy_placeholder(state: PolicyDeskState) -> dict:

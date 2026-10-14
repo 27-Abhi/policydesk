@@ -25,6 +25,11 @@ class PolicyDeskState(TypedDict, total=False):
         relevance_score: Graded relevance score for retrieved chunks.
         is_relevant: Boolean indicating if retrieved chunks meet relevance threshold.
         answer: Synthesized response to the policy query.
+        dispute_id: Unique identifier for initiated dispute case.
+        transaction_id: Identifier of disputed financial transaction.
+        dispute_status: Lifecycle status of dispute (e.g. pending_human_review, approved, rejected).
+        dispute_comments: Notes or rationale provided by compliance reviewer.
+        dispute_notification_sent: Flag indicating automated notification dispatched to backend team.
     """
     user_input: str
     intent: Optional[Intent]
@@ -35,4 +40,10 @@ class PolicyDeskState(TypedDict, total=False):
     relevance_score: float
     is_relevant: bool
     answer: Optional[str]
+    dispute_id: Optional[str]
+    transaction_id: Optional[str]
+    dispute_status: Optional[str]
+    dispute_comments: Optional[str]
+    dispute_notification_sent: Optional[bool]
+
 
