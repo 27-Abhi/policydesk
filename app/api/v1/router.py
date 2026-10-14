@@ -1,3 +1,5 @@
+import asyncio
+import json
 import time
 import uuid
 from typing import AsyncGenerator, Optional
@@ -161,6 +163,54 @@ def get_dispute_status(
         "user_input": values.get("user_input"),
         "answer": values.get("answer"),
     }
+
+
+@api_v1_router.get(
+    "/disputes/{thread_id}/events",
+    summary="Real-time Server-Sent Events stream for dispute status resolution",
+)
+async def stream_dispute_events(
+    thread_id: str,
+    graph: CompiledStateGraph = Depends(get_graph),
+):
+    async def event_generator() -> AsyncGenerator[str, None]:
+        # Announce successful SSE handshake
+        yield f"data: {json.dumps({'type': 'connected', 'thread_id': thread_id})}\n\n"
+
+        # Check resolution up to 10 minutes (600 iterations @ 1s)
+        for _ in range(600):
+            checkpoint_state = graph.get_state({"configurable": {"thread_id": thread_id}})
+            if checkpoint_state and checkpoint_state.values:
+                # If there are no pending next nodes, execution has finalized
+                if not checkpoint_state.next:
+                    vals = checkpoint_state.values
+                    status = vals.get("dispute_status")
+                    if status and status != "pending_human_review":
+                        payload = {
+                            "type": "dispute_resolved",
+                            "thread_id": thread_id,
+                            "dispute_id": vals.get("dispute_id"),
+                            "transaction_id": vals.get("transaction_id"),
+                            "dispute_status": status,
+                            "dispute_comments": vals.get("dispute_comments"),
+                            "answer": vals.get("answer"),
+                        }
+                        yield f"data: {json.dumps(payload)}\n\n"
+                        return
+
+            await asyncio.sleep(1)
+
+        yield f"data: {json.dumps({'type': 'timeout', 'thread_id': thread_id})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @api_v1_router.post(

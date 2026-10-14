@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolicyDesk - Compliance & Operations Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .tab-active { border-color: #6366f1; color: #6366f1; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <!-- Top Operations Header -->
+  <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center shadow-md">
+        <i class="fa-solid fa-shield-halved text-xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+          PolicyDesk <span class="text-xs bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded border border-rose-500/30">Compliance & Staff Portal</span>
+        </h1>
+        <p class="text-xs text-slate-400">Internal Operations Center • Port 8001 (Restricted Network)</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center text-xs bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-ping"></span>
+        <span>Auto-sync Active (5s)</span>
+      </div>
+      <button onclick="fetchAllData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg transition border border-slate-700 flex items-center gap-1.5">
+        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+      </button>
+      <a href="http://localhost:8000" target="_blank" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Customer App (8000)
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="bg-slate-950/60 border-b border-slate-800 px-6 flex space-x-8 text-sm">
+    <button onclick="switchTab('disputes')" id="tab-disputes" class="py-3 px-1 border-b-2 font-medium tab-active transition flex items-center gap-2">
+      <i class="fa-solid fa-scale-balanced"></i> Dispute Cases (HITL Review)
+      <span id="dispute-count" class="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full border border-amber-500/30">0</span>
+    </button>
+    <button onclick="switchTab('escalations')" id="tab-escalations" class="py-3 px-1 border-b-2 font-medium border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
+      <i class="fa-solid fa-headset"></i> Customer Care Tickets
+      <span id="escalation-count" class="bg-slate-800 text-slate-300 text-xs px-2 py-0.5 rounded-full">0</span>
+    </button>
+    <button onclick="switchTab('observability')" id="tab-observability" class="py-3 px-1 border-b-2 font-medium border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
+      <i class="fa-solid fa-chart-line"></i> Observability & RAG Inspector
+    </button>
+  </nav>
+
+  <!-- Content Container -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-6 overflow-y-auto">
+
+    <!-- TAB 1: DISPUTES -->
+    <section id="section-disputes" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-white">Dispute Action Review Board</h2>
+          <p class="text-xs text-slate-400">Cases paused at LangGraph <code>interrupt()</code> awaiting compliance decision.</p>
+        </div>
+      </div>
+
+      <div id="disputes-list" class="space-y-3">
+        <!-- Rendered dynamically -->
+        <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-8 text-center text-slate-500 text-sm">
+          <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+          <p>Scanning checkpointer threads for pending dispute cases...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ESCALATIONS -->
+    <section id="section-escalations" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-white">Customer Care Support Queue</h2>
+          <p class="text-xs text-slate-400">Live human handoff tickets triaged by risk and urgency keywords.</p>
+        </div>
+      </div>
+
+      <div id="escalations-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- TAB 3: OBSERVABILITY & RAG -->
+    <section id="section-observability" class="hidden space-y-4">
+      <div>
+        <h2 class="text-lg font-semibold text-white">RAG & State Inspector</h2>
+        <p class="text-xs text-slate-400">Test queries against the 4-step RAG pipeline to inspect similarity scores and retrieved PDF parent chunks.</p>
+      </div>
+
+      <div class="bg-slate-800/50 border border-slate-800 rounded-xl p-4 flex gap-3">
+        <input 
+          id="rag-test-input" 
+          type="text" 
+          value="What is the deposit policy for deceased account holders?" 
+          class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+        <button onclick="runRagDebug()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition shadow flex items-center gap-2">
+          <i class="fa-solid fa-magnifying-glass"></i> Inspect Pipeline
+        </button>
+      </div>
+
+      <div id="rag-debug-result" class="hidden space-y-4">
+        <!-- Metrics Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-xs text-slate-400 block">Classified Intent</span>
+            <span id="metric-intent" class="text-sm font-semibold text-indigo-400">--</span>
+          </div>
+          <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-xs text-slate-400 block">Relevance Score</span>
+            <span id="metric-score" class="text-sm font-semibold text-emerald-400">--</span>
+          </div>
+          <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-xs text-slate-400 block">Relevance Threshold</span>
+            <span class="text-sm font-semibold text-slate-300">0.1500 (Passed)</span>
+          </div>
+          <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-xs text-slate-400 block">Retrieved Parent Chunks</span>
+            <span id="metric-chunks-count" class="text-sm font-semibold text-cyan-400">--</span>
+          </div>
+        </div>
+
+        <!-- Chunks list -->
+        <div class="bg-slate-800/60 border border-slate-800 rounded-xl p-4">
+          <h3 class="text-sm font-semibold text-slate-200 mb-2">Top Reranked Parent Clauses</h3>
+          <div id="chunks-container" class="space-y-2 text-xs text-slate-300 font-mono"></div>
+        </div>
+
+        <!-- Generated answer -->
+        <div class="bg-slate-800/60 border border-slate-800 rounded-xl p-4">
+          <h3 class="text-sm font-semibold text-slate-200 mb-2">Synthesized Answer</h3>
+          <div id="rag-answer" class="text-xs text-slate-300 bg-slate-900/80 p-3 rounded-lg leading-relaxed whitespace-pre-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let activeTab = 'disputes';
+
+    function switchTab(tab) {
+      activeTab = tab;
+      ['disputes', 'escalations', 'observability'].forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        const sec = document.getElementById('section-' + t);
+        if (t === tab) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('border-transparent', 'text-slate-400');
+          sec.classList.remove('hidden');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('border-transparent', 'text-slate-400');
+          sec.classList.add('hidden');
+        }
+      });
+      if (tab !== 'observability') fetchAllData();
+    }
+
+    async function fetchDisputes() {
+      try {
+        const resp = await fetch('/v1/disputes');
+        if (!resp.ok) return;
+        const data = await resp.json();
+        renderDisputes(data);
+      } catch (e) {
+        console.error('Failed to fetch disputes', e);
+      }
+    }
+
+    async function fetchEscalations() {
+      try {
+        const resp = await fetch('/v1/escalations');
+        if (!resp.ok) return;
+        const data = await resp.json();
+        renderEscalations(data);
+      } catch (e) {
+        console.error('Failed to fetch escalations', e);
+      }
+    }
+
+    function fetchAllData() {
+      fetchDisputes();
+      fetchEscalations();
+    }
+
+    function renderDisputes(items) {
+      const pendingItems = items.filter(i => i.is_pending_review);
+      document.getElementById('dispute-count').innerText = pendingItems.length;
+
+      const container = document.getElementById('disputes-list');
+      if (!items || items.length === 0) {
+        container.innerHTML = `
+          <div class="bg-slate-800/30 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-sm">
+            <i class="fa-solid fa-check-circle text-2xl text-emerald-500 mb-2"></i>
+            <p>No active dispute cases in the review queue.</p>
+            <p class="text-xs text-slate-500 mt-1">To test: open Customer Portal (Port 8000) and send "I want to dispute transaction TX-9012".</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(d => {
+        const isPending = d.is_pending_review;
+        const statusBadge = isPending 
+          ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5"><i class="fa-solid fa-clock animate-pulse"></i> PENDING APPROVAL</span>`
+          : (d.dispute_status === 'approved' 
+              ? `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> APPROVED</span>`
+              : `<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> REJECTED</span>`);
+
+        return `
+          <div class="bg-slate-800/60 border ${isPending ? 'border-amber-500/40 shadow-lg shadow-amber-950/20' : 'border-slate-800'} rounded-xl p-5 space-y-3 transition">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-3">
+                  <span class="text-base font-bold text-white">${escapeHtml(d.dispute_id || 'DISP-PENDING')}</span>
+                  <span class="text-xs font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-700">Tx: ${escapeHtml(d.transaction_id || 'UNKNOWN')}</span>
+                  ${statusBadge}
+                </div>
+                <div class="text-xs text-slate-400 font-mono mt-1">Thread ID: ${escapeHtml(d.thread_id)}</div>
+              </div>
+
+              ${isPending ? `
+                <div class="flex items-center gap-2">
+                  <button onclick="reviewCase('${d.thread_id}', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow flex items-center gap-1.5">
+                    <i class="fa-solid fa-check"></i> Approve & Dispatch
+                  </button>
+                  <button onclick="reviewCase('${d.thread_id}', false)" class="bg-rose-600/80 hover:bg-rose-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow flex items-center gap-1.5">
+                    <i class="fa-solid fa-xmark"></i> Reject
+                  </button>
+                </div>
+              ` : `
+                <div class="text-xs text-slate-400 font-medium">
+                  ${d.dispute_comments ? `Notes: <em>${escapeHtml(d.dispute_comments)}</em>` : 'Processed'}
+                </div>
+              `}
+            </div>
+
+            <div class="bg-slate-900/70 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 leading-relaxed">
+              <span class="text-slate-500 font-semibold block mb-1">Customer Inquiry:</span>
+              ${escapeHtml(d.user_input || 'N/A')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEscalations(items) {
+      document.getElementById('escalation-count').innerText = items.length;
+      const container = document.getElementById('escalations-list');
+      if (!items || items.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 bg-slate-800/30 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-sm">
+            <i class="fa-solid fa-headset text-2xl text-indigo-400 mb-2"></i>
+            <p>No customer escalation tickets logged yet.</p>
+            <p class="text-xs text-slate-500 mt-1">To test: open Customer Portal (Port 8000) and request "Transfer me to a live agent".</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(t => {
+        let badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+        if (t.priority === 'P1_CRITICAL') badgeColor = 'bg-rose-500/20 text-rose-300 border-rose-500/30 animate-pulse';
+        else if (t.priority === 'P2_HIGH') badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+        const isResolved = t.status === 'Resolved';
+
+        return `
+          <div class="bg-slate-800/60 border ${isResolved ? 'border-slate-800 opacity-60' : 'border-slate-700/70'} rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-ticket text-indigo-400"></i> ${escapeHtml(t.ticket_id)}
+              </span>
+              <span class="text-[11px] font-semibold px-2 py-0.5 rounded border ${badgeColor}">
+                ${t.priority.replace('_', ' ')}
+              </span>
+            </div>
+
+            <div class="text-xs text-slate-300 space-y-1">
+              <div><strong class="text-slate-400">Account:</strong> ${escapeHtml(t.account_number)} | <strong class="text-slate-400">Phone:</strong> ${escapeHtml(t.phone)}</div>
+              <div><strong class="text-slate-400">SLA Wait Time:</strong> ${escapeHtml(t.wait_time)}</div>
+              <div><strong class="text-slate-400">Created:</strong> ${escapeHtml(t.created_at)}</div>
+            </div>
+
+            <div class="bg-slate-900/70 rounded p-2 text-xs text-slate-300 italic">
+              "${escapeHtml(t.query_summary)}"
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs ${isResolved ? 'text-slate-500' : 'text-emerald-400'} font-medium">Status: ${t.status}</span>
+              ${!isResolved ? `
+                <button onclick="resolveTicket('${t.ticket_id}')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded transition">
+                  Mark Handled
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function reviewCase(threadId, approved) {
+      let comments = "";
+      if (approved) {
+        comments = prompt("Optional approval comments (or press OK to approve with standard dispatch):", "Compliance override verified");
+        if (comments === null) return;
+      } else {
+        comments = prompt("Enter compliance rejection reason for the customer:", "Documentation provided does not substantiate unauthorized merchant charge.");
+        if (comments === null) return;
+      }
+
+      try {
+        const resp = await fetch(`/v1/disputes/${threadId}/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ approved: approved, comments: comments })
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          alert("Error: " + (err.detail || "Review submission failed."));
+          return;
+        }
+        fetchAllData();
+      } catch (e) {
+        alert("Failed to connect: " + e.message);
+      }
+    }
+
+    async function resolveTicket(ticketId) {
+      try {
+        await fetch(`/v1/escalations/${ticketId}/resolve`, { method: 'POST' });
+        fetchEscalations();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function runRagDebug() {
+      const q = document.getElementById('rag-test-input').value.trim();
+      if (!q) return;
+
+      try {
+        const resp = await fetch('/v1/chat/debug', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'policydesk',
+            messages: [{ role: 'user', content: q }]
+          })
+        });
+
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        document.getElementById('metric-intent').innerText = data.intent || 'out_of_scope';
+        document.getElementById('metric-score').innerText = (data.relevance_score || 0).toFixed(4);
+        document.getElementById('metric-chunks-count').innerText = (data.retrieved_docs || []).length;
+
+        const chunksContainer = document.getElementById('chunks-container');
+        if (!data.reranked_docs || data.reranked_docs.length === 0) {
+          chunksContainer.innerHTML = '<span class="text-slate-500">No chunks retrieved or scored above threshold.</span>';
+        } else {
+          chunksContainer.innerHTML = data.reranked_docs.map((doc, idx) => `
+            <div class="bg-slate-900/90 p-2.5 rounded border border-slate-700/60 leading-relaxed">
+              <span class="text-indigo-400 font-bold block mb-1">Rank #${idx + 1}:</span>
+              ${escapeHtml(doc)}
+            </div>
+          `).join('');
+        }
+
+        document.getElementById('rag-answer').innerText = data.answer || 'No answer synthesized.';
+        document.getElementById('rag-debug-result').classList.remove('hidden');
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Auto-polling every 5 seconds
+    fetchAllData();
+    setInterval(fetchAllData, 5000);
+  </script>
+</body>
+</html>

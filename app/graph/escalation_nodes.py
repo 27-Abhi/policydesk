@@ -6,6 +6,22 @@ from app.graph.state import PolicyDeskState
 
 logger = logging.getLogger("policydesk.escalation")
 
+_ESCALATION_TICKETS: list[dict] = []
+
+
+def get_escalation_tickets() -> list[dict]:
+    """Return all created support escalation tickets."""
+    return list(_ESCALATION_TICKETS)
+
+
+def resolve_escalation_ticket(ticket_id: str) -> bool:
+    """Mark an escalation ticket as resolved."""
+    for t in _ESCALATION_TICKETS:
+        if t["ticket_id"] == ticket_id:
+            t["status"] = "Resolved"
+            return True
+    return False
+
 
 def handle_human_escalation(state: PolicyDeskState) -> dict:
     """Escalate customer inquiry to Customer Care with prioritized ticketing."""
@@ -29,6 +45,18 @@ def handle_human_escalation(state: PolicyDeskState) -> dict:
     date_str = time.strftime("%Y%m%d")
     ticket_id = f"TICK-{date_str}-{uuid.uuid4().hex[:6].upper()}"
     query_summary = user_input[:80] + ("..." if len(user_input) > 80 else "")
+
+    ticket_record = {
+        "ticket_id": ticket_id,
+        "priority": priority,
+        "account_number": account_number,
+        "phone": phone,
+        "query_summary": query_summary,
+        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "Open",
+        "wait_time": wait_time,
+    }
+    _ESCALATION_TICKETS.append(ticket_record)
 
     logger.info(
         "[ESCALATION:TICKET] Created ticket %s (Priority: %s) for account %s [Phone: %s]: %r",

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolicyDesk - Banking AI Support</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .chat-bubble { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col font-sans">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-indigo-900 text-white px-6 py-4 shadow-md flex items-center justify-between border-b border-indigo-950">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center shadow">
+        <i class="fa-solid fa-building-columns text-xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+          PolicyDesk <span class="text-xs bg-cyan-400/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-400/30">Customer Portal</span>
+        </h1>
+        <p class="text-xs text-indigo-200">Escalation-Aware Financial Support • 2FA Protected</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="hidden sm:flex items-center text-xs bg-indigo-950/70 px-3 py-1.5 rounded-lg border border-indigo-800 text-indigo-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+        <span id="session-display">Session: Initializing...</span>
+      </div>
+      <button onclick="resetSession()" class="text-xs bg-indigo-800 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition border border-indigo-700 flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-rotate-right"></i> New Chat
+      </button>
+      <a href="http://localhost:8001" target="_blank" class="text-xs bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+        <i class="fa-solid fa-shield-halved"></i> Staff Portal (8001)
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col min-h-0">
+
+    <!-- Quick-Action Test Pills -->
+    <div class="mb-3">
+      <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Quick Scenarios</p>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="sendQuickPrompt('What is the international wire transfer fee policy?')" class="text-xs bg-white hover:bg-indigo-50 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition hover:border-indigo-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-file-invoice text-indigo-500"></i> Wire Transfer Policy
+        </button>
+        <button onclick="sendQuickPrompt('What is my checking account balance?')" class="text-xs bg-white hover:bg-indigo-50 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition hover:border-indigo-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-credit-card text-emerald-500"></i> Account Balance (2FA)
+        </button>
+        <button onclick="sendQuickPrompt('I need to dispute unauthorized transaction TXN-9012')" class="text-xs bg-white hover:bg-indigo-50 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition hover:border-indigo-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Dispute Transaction
+        </button>
+        <button onclick="sendQuickPrompt('Please transfer me to a human support agent immediately!')" class="text-xs bg-white hover:bg-indigo-50 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition hover:border-indigo-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-headset text-rose-500"></i> Customer Care Escalation
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages Window -->
+    <div id="chat-window" class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 overflow-y-auto space-y-4">
+      <!-- Assistant Welcome Message -->
+      <div class="chat-bubble flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+        <div class="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] text-slate-800 text-sm shadow-sm leading-relaxed">
+          Hello! I'm your <strong>PolicyDesk Banking Assistant</strong>. I can answer policy questions from our Deposit Policy handbook, check account balances and transactions via secure 2FA, register transaction disputes, or connect you to Customer Care.
+          <div class="mt-2 text-xs text-slate-500 font-medium">Try asking a question or choose one of the quick scenario pills above.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2FA Quick Helper Toolbar -->
+    <div id="auth-helper" class="mt-2 hidden bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 flex items-center justify-between text-xs text-amber-900 shadow-sm">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-shield text-amber-600"></i>
+        <span><strong>2FA Helper:</strong> Testing authentication?</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="setInput('555-019-2834')" class="bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded border border-amber-300 text-amber-950 font-mono transition">
+          Test Phone (555-019-2834)
+        </button>
+        <button onclick="setInput('123456')" class="bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded border border-amber-300 text-amber-950 font-mono transition">
+          Demo OTP (123456)
+        </button>
+      </div>
+    </div>
+
+    <!-- Input Bar -->
+    <form id="chat-form" onsubmit="handleSend(event)" class="mt-3 flex gap-2">
+      <input 
+        id="user-input" 
+        type="text" 
+        placeholder="Ask a policy question, check account balance, or request a dispute..." 
+        autocomplete="off"
+        class="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm"
+      >
+      <button 
+        id="send-btn" 
+        type="submit" 
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-3 rounded-xl transition shadow flex items-center gap-2 text-sm disabled:opacity-50"
+      >
+        <span>Send</span>
+        <i class="fa-solid fa-paper-plane text-xs"></i>
+      </button>
+    </form>
+  </div>
+
+  <script>
+    let threadId = localStorage.getItem('policydesk_thread_id') || ('session_' + Math.random().toString(36).substring(2, 12));
+    localStorage.setItem('policydesk_thread_id', threadId);
+    document.getElementById('session-display').innerText = 'Thread: ' + threadId;
+
+    async function checkExistingDisputeStatus() {
+      try {
+        const resp = await fetch(`/v1/disputes/${threadId}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data && data.is_pending_review) {
+          appendAssistantMessage(`Dispute case ${data.dispute_id} for transaction ${data.transaction_id} is currently submitted for compliance review.`);
+        }
+      } catch (e) {}
+    }
+    checkExistingDisputeStatus();
+
+    function resetSession() {
+      threadId = 'session_' + Math.random().toString(36).substring(2, 12);
+      localStorage.setItem('policydesk_thread_id', threadId);
+      document.getElementById('session-display').innerText = 'Thread: ' + threadId;
+      const win = document.getElementById('chat-window');
+      win.innerHTML = `
+        <div class="chat-bubble flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <i class="fa-solid fa-robot text-sm"></i>
+          </div>
+          <div class="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] text-slate-800 text-sm shadow-sm leading-relaxed">
+            Started a new session (<code>${threadId}</code>). How can I assist you today?
+          </div>
+        </div>
+      `;
+      document.getElementById('auth-helper').classList.add('hidden');
+    }
+
+    function setInput(val) {
+      const inp = document.getElementById('user-input');
+      inp.value = val;
+      inp.focus();
+    }
+
+    function sendQuickPrompt(prompt) {
+      document.getElementById('user-input').value = prompt;
+      handleSend(new Event('submit'));
+    }
+
+    function appendUserMessage(text) {
+      const win = document.getElementById('chat-window');
+      const div = document.createElement('div');
+      div.className = 'chat-bubble flex items-start justify-end gap-2';
+      div.innerHTML = `
+        <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%] text-sm shadow-sm leading-relaxed">
+          ${escapeHtml(text)}
+        </div>
+      `;
+      win.appendChild(div);
+      win.scrollTop = win.scrollHeight;
+    }
+
+    function appendAssistantMessage(text) {
+      const win = document.getElementById('chat-window');
+      const div = document.createElement('div');
+      div.className = 'chat-bubble flex items-start gap-3';
+
+      let isDisputePending = text.includes("submitted for compliance review");
+      let isApproved = text.includes("approved by compliance");
+      let isRejected = text.includes("not approved");
+
+      let badgeHtml = "";
+      let badgeId = 'badge-' + Math.random().toString(36).substring(2, 9);
+      if (isDisputePending) {
+        badgeHtml = `
+          <div id="${badgeId}" class="mt-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-xs flex items-center justify-between">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-amber-600 animate-pulse"></i> Awaiting Human Compliance Approval (Live SSE)</span>
+            <a href="http://localhost:8001" target="_blank" class="text-indigo-600 font-semibold underline hover:text-indigo-800">Review on Port 8001 &rarr;</a>
+          </div>
+        `;
+        connectDisputeEventSource(threadId, badgeId);
+      } else if (isApproved) {
+        badgeHtml = `
+          <div class="mt-2.5 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i> Compliance Decision: Case Approved
+          </div>
+        `;
+      } else if (isRejected) {
+        badgeHtml = `
+          <div class="mt-2.5 p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-xmark text-rose-600"></i> Compliance Decision: Case Rejected
+          </div>
+        `;
+      }
+
+      // Check if 2FA prompt
+      if (text.toLowerCase().includes("phone number") || text.toLowerCase().includes("verification code")) {
+        document.getElementById('auth-helper').classList.remove('hidden');
+      } else if (text.toLowerCase().includes("authentication successful")) {
+        document.getElementById('auth-helper').classList.add('hidden');
+      }
+
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+        <div class="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] text-slate-800 text-sm shadow-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}${badgeHtml}</div>
+      `;
+      win.appendChild(div);
+      win.scrollTop = win.scrollHeight;
+    }
+
+    let activeEventSources = {};
+
+    function connectDisputeEventSource(tid, bId) {
+      if (activeEventSources[tid]) {
+        activeEventSources[tid].close();
+      }
+
+      console.log(`[SSE] Subscribing to live dispute stream for thread: ${tid}`);
+      const evtSource = new EventSource(`/v1/disputes/${tid}/events`);
+      activeEventSources[tid] = evtSource;
+
+      evtSource.onmessage = function(e) {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.type === 'dispute_resolved') {
+            evtSource.close();
+            delete activeEventSources[tid];
+
+            const badgeEl = document.getElementById(bId);
+            if (badgeEl) {
+              if (data.dispute_status === 'approved') {
+                badgeEl.className = 'mt-2.5 p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-900 text-xs flex items-center gap-1.5';
+                badgeEl.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i> <span><strong>Compliance Approved:</strong> Automated operations dispatch sent.</span>';
+              } else {
+                badgeEl.className = 'mt-2.5 p-2.5 bg-rose-50 border border-rose-300 rounded-lg text-rose-900 text-xs flex items-center gap-1.5';
+                badgeEl.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm"></i> <span><strong>Compliance Decision:</strong> Dispute request reviewed and not approved.</span>';
+              }
+            }
+
+            // Append final official decision into chat stream
+            if (data.answer) {
+              appendAssistantMessage(data.answer);
+            }
+          }
+        } catch (err) {
+          console.error('[SSE] Event parse error:', err);
+        }
+      };
+
+      evtSource.onerror = function() {
+        // EventSource will automatically retry connection if server drops
+      };
+    }
+
+    function appendLoadingBubble() {
+      const win = document.getElementById('chat-window');
+      const div = document.createElement('div');
+      div.id = 'loading-bubble';
+      div.className = 'chat-bubble flex items-start gap-3';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+        <div class="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-500 text-xs shadow-sm flex items-center gap-2">
+          <i class="fa-solid fa-circle-notch fa-spin text-indigo-600"></i>
+          <span>Thinking and querying policy engine...</span>
+        </div>
+      `;
+      win.appendChild(div);
+      win.scrollTop = win.scrollHeight;
+    }
+
+    function removeLoadingBubble() {
+      const el = document.getElementById('loading-bubble');
+      if (el) el.remove();
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function handleSend(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendUserMessage(text);
+      input.value = '';
+      input.focus();
+
+      const sendBtn = document.getElementById('send-btn');
+      sendBtn.disabled = true;
+      appendLoadingBubble();
+
+      try {
+        const resp = await fetch('/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Thread-ID': threadId
+          },
+          body: JSON.stringify({
+            model: 'policydesk',
+            messages: [{ role: 'user', content: text }],
+            stream: false
+          })
+        });
+
+        removeLoadingBubble();
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          appendAssistantMessage('Error: ' + (err.detail || 'Failed to process request.'));
+          return;
+        }
+
+        const data = await resp.json();
+        const content = data.choices && data.choices[0] ? data.choices[0].message.content : 'No answer generated.';
+        appendAssistantMessage(content);
+
+      } catch (err) {
+        removeLoadingBubble();
+        appendAssistantMessage('Network error communicating with PolicyDesk server: ' + err.message);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
