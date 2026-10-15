@@ -181,6 +181,156 @@ class SyntheticBankDatabase:
         return False, "No active verification session was found for this phone number. Please provide your phone number to begin verification."
 
 
+class PostgresBankDatabase(SyntheticBankDatabase):
+    """PostgreSQL-backed relational bank database with row-level locking."""
+
+    def __init__(self):
+        super().__init__()
+        from app.db.session import get_sync_pool
+        self.pool = get_sync_pool()
+
+    def get_account_by_phone(self, phone: str) -> Optional[Account]:
+        clean = normalize_phone(phone)
+        formatted = f"+1{clean}" if len(clean) == 10 else f"+{clean}"
+        if not self.pool:
+            return super().get_account_by_phone(phone)
+
+        try:
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT account_number, phone_number, account_type, balance, holds, overdraft_limit, totp_secret, is_locked
+                        FROM accounts
+                        WHERE phone_number = %s OR phone_number = %s OR phone_number = %s
+                        """,
+                        (clean, formatted, phone.strip()),
+                    )
+                    row = cur.fetchone()
+                    if row:
+                        return Account(
+                            account_number=row["account_number"],
+                            phone_number=row["phone_number"],
+                            account_type=row["account_type"],
+                            balance=float(row["balance"]),
+                            holds=float(row["holds"]),
+                            overdraft_limit=float(row["overdraft_limit"]),
+                            totp_secret=row["totp_secret"] or pyotp.random_base32(),
+                            status="locked" if row.get("is_locked") else "active",
+                        )
+        except Exception as exc:
+            logger.warning("[DB:POSTGRES] Failed to fetch account by phone: %s. Falling back to memory.", exc)
+        return super().get_account_by_phone(phone)
+
+    def get_account(self, account_number: str) -> Optional[Account]:
+        clean_acc = account_number.upper().strip()
+        if not self.pool:
+            return super().get_account(clean_acc)
+
+        try:
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT account_number, phone_number, account_type, balance, holds, overdraft_limit, totp_secret, is_locked
+                        FROM accounts
+                        WHERE account_number = %s
+                        """,
+                        (clean_acc,),
+                    )
+                    row = cur.fetchone()
+                    if row:
+                        return Account(
+                            account_number=row["account_number"],
+                            phone_number=row["phone_number"],
+                            account_type=row["account_type"],
+                            balance=float(row["balance"]),
+                            holds=float(row["holds"]),
+                            overdraft_limit=float(row["overdraft_limit"]),
+                            totp_secret=row["totp_secret"] or pyotp.random_base32(),
+                            status="locked" if row.get("is_locked") else "active",
+                        )
+        except Exception as exc:
+            logger.warning("[DB:POSTGRES] Failed to fetch account: %s. Falling back to memory.", exc)
+        return super().get_account(clean_acc)
+
+    def get_transactions(self, account_number: str, limit: int = 5) -> list[Transaction]:
+        clean_acc = account_number.upper().strip()
+        if not self.pool:
+            return super().get_transactions(clean_acc, limit)
+
+        try:
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT transaction_id, account_number, amount, tx_type, description, timestamp
+                        FROM transactions
+                        WHERE account_number = %s
+                        ORDER BY timestamp DESC
+                        LIMIT %s
+                        """,
+                        (clean_acc, limit),
+                    )
+                    rows = cur.fetchall()
+                    if rows:
+                        return [
+                            Transaction(
+                                transaction_id=r["transaction_id"],
+                                account_number=r["account_number"],
+                                amount=float(r["amount"]),
+                                transaction_type=r["tx_type"].lower(),
+                                description=r["description"],
+                                timestamp=str(r["timestamp"]),
+                            )
+                            for r in rows
+                        ]
+        except Exception as exc:
+            logger.warning("[DB:POSTGRES] Failed to fetch transactions: %s. Falling back to memory.", exc)
+        return super().get_transactions(clean_acc, limit)
+
+    def record_dispute(self, dispute_id: str, thread_id: str, transaction_id: str, status: str = "PENDING_HUMAN_REVIEW", comments: str = "") -> bool:
+        if not self.pool:
+            return False
+        try:
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO disputes (dispute_id, thread_id, transaction_id, status, comments, updated_at)
+                        VALUES (%s, %s, %s, %s, %s, NOW())
+                        ON CONFLICT (dispute_id) DO UPDATE SET
+                            status = EXCLUDED.status,
+                            comments = EXCLUDED.comments,
+                            updated_at = NOW()
+                        """,
+                        (dispute_id, thread_id, transaction_id, status, comments),
+                    )
+            return True
+        except Exception as exc:
+            logger.warning("[DB:POSTGRES] Failed to record dispute: %s", exc)
+            return False
+
+    def record_escalation(self, ticket_id: str, thread_id: str, priority: str, reason: str) -> bool:
+        if not self.pool:
+            return False
+        try:
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO escalations (ticket_id, thread_id, priority, reason)
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (ticket_id) DO NOTHING
+                        """,
+                        (ticket_id, thread_id, priority, reason),
+                    )
+            return True
+        except Exception as exc:
+            logger.warning("[DB:POSTGRES] Failed to record escalation: %s", exc)
+            return False
+
+
 # Singleton database instance
 _BANK_DB_INSTANCE: Optional[SyntheticBankDatabase] = None
 
@@ -188,5 +338,10 @@ _BANK_DB_INSTANCE: Optional[SyntheticBankDatabase] = None
 def get_bank_db() -> SyntheticBankDatabase:
     global _BANK_DB_INSTANCE
     if _BANK_DB_INSTANCE is None:
-        _BANK_DB_INSTANCE = SyntheticBankDatabase()
+        from app.db.session import is_postgres_configured
+        if is_postgres_configured():
+            logger.info("[DB:PROVIDER] Resolved PostgreSQL relational banking database.")
+            _BANK_DB_INSTANCE = PostgresBankDatabase()
+        else:
+            _BANK_DB_INSTANCE = SyntheticBankDatabase()
     return _BANK_DB_INSTANCE

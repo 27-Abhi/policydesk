@@ -14,7 +14,13 @@ logging.basicConfig(
 logger = logging.getLogger("policydesk.server")
 
 
+from app.db.session import close_pools, init_database
+
+
 async def run_dual_servers():
+    # Initialize relational schema if PostgreSQL is configured
+    init_database()
+
     print("""
 ======================================================================
 🏦  POLICYDESK DUAL-PORT FINANCIAL SERVICES GATEWAY
@@ -49,7 +55,10 @@ async def run_dual_servers():
     server_customer = uvicorn.Server(config_customer)
     server_admin = uvicorn.Server(config_admin)
 
-    await asyncio.gather(server_customer.serve(), server_admin.serve())
+    try:
+        await asyncio.gather(server_customer.serve(), server_admin.serve())
+    finally:
+        await close_pools()
 
 
 def main():
@@ -61,3 +70,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

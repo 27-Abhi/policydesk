@@ -75,7 +75,19 @@ def build_graph(checkpointer: Optional[Any] = None):
     builder.add_edge("out_of_scope_placeholder", END)
 
     if checkpointer is None:
-        checkpointer = MemorySaver()
+        import os
+        import sqlite3
+        from langgraph.checkpoint.sqlite import SqliteSaver
+
+        db_path = os.getenv("CHECKPOINT_DB_PATH", "data/checkpoints.db")
+        if db_path != ":memory:":
+            os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
+        conn = sqlite3.connect(db_path, check_same_thread=False)
+        try:
+            conn.execute("PRAGMA journal_mode=WAL;")
+        except Exception:
+            pass
+        checkpointer = SqliteSaver(conn)
 
     compiled = builder.compile(checkpointer=checkpointer)
 
