@@ -9,6 +9,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
 from app.graph.graph import get_graph
+from app.prompts import format_dispute_pending
 from app.api.schemas import (
     ChatCompletionChoice,
     ChatCompletionChunk,
@@ -118,10 +119,7 @@ def create_chat_completion(
     if final_state.get("__interrupt__") or final_state.get("dispute_status") == "pending_human_review":
         dispute_id = final_state.get("dispute_id", "PENDING")
         tx_id = final_state.get("transaction_id", "GENERAL")
-        answer = (
-            f"Dispute case {dispute_id} for transaction {tx_id} has been recorded and submitted for compliance review. "
-            f"Reference thread ID: {thread_id}."
-        )
+        answer = format_dispute_pending(dispute_id=dispute_id, transaction_id=tx_id, thread_id=thread_id)
     else:
         answer = final_state.get("answer") or f"Routed to: {final_state.get('route', 'out_of_scope')}"
 
