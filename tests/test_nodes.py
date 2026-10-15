@@ -61,4 +61,26 @@ class TestClassifyIntentNode:
 
 class TestPlaceholderNodes:
     def test_out_of_scope_placeholder(self):
-        assert out_of_scope_placeholder({}) == {"route": "out_of_scope"}
+        res = out_of_scope_placeholder({})
+        assert res["route"] == "out_of_scope"
+        assert "PolicyDesk Banking Assistant" in res["answer"]
+        assert "Wire Transfers" in res["answer"]
+
+    def test_sanitize_resets_ephemeral_fields(self):
+        state = {
+            "user_input": "New turn input",
+            "answer": "Old answer from Turn 1",
+            "route": "policy_question",
+            "retrieved_docs": ["Old chunk"],
+            "reranked_docs": ["Old chunk"],
+            "relevance_score": 0.95,
+            "is_relevant": True,
+        }
+        res = sanitize(state)
+        assert res["user_input"] == "New turn input"
+        assert res["answer"] is None
+        assert res["route"] is None
+        assert res["retrieved_docs"] == []
+        assert res["reranked_docs"] == []
+        assert res["relevance_score"] == 0.0
+        assert res["is_relevant"] is False

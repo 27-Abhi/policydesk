@@ -51,5 +51,7 @@ class PolicyDeskState(TypedDict, total=False):
     account_number: Optional[str]
     escalation_ticket_id: Optional[str]
     escalation_priority: Optional[str]
+    messages: list[dict[str, str]]
+    contextual_query: Optional[str]
 
 

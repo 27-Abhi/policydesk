@@ -35,6 +35,15 @@ def serve_customer_portal():
     return HTMLResponse(content="<h1>PolicyDesk Customer Portal</h1><p>static/customer.html not found</p>")
 
 
+@customer_app.get("/explainer", response_class=HTMLResponse, tags=["Architecture Explainer"])
+def serve_architecture_explainer():
+    """Serve the interactive animated architecture explainer."""
+    html_file = STATIC_DIR / "explainer.html"
+    if html_file.exists():
+        return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>PolicyDesk Architecture Explainer</h1><p>static/explainer.html not found</p>")
+
+
 @customer_app.get("/health", tags=["Health"])
 def health_check():
     return {"status": "ok", "service": "policydesk-customer-portal", "port": 8000}

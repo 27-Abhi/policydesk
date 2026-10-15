@@ -90,3 +90,33 @@ class DisputeReviewResponse(BaseModel):
     answer: str
 
 
+class PolicyIngestRequest(BaseModel):
+    doc_id: str = Field(..., min_length=1, description="Unique identifier for the document")
+    title: str = Field(..., min_length=1, description="Human-readable title of the policy")
+    text: str = Field(..., min_length=1, description="Full policy text with paragraphs")
+
+
+class PolicyIngestResponse(BaseModel):
+    status: str = "success"
+    message: str
+    doc_id: str
+    title: str
+    parents_added: int
+    children_added: int
+    total_parents: int
+    total_children: int
+
+
+class PolicyDocumentSummary(BaseModel):
+    doc_id: str
+    title: str
+    parent_chunks: int
+
+
+class PolicyListResponse(BaseModel):
+    total_documents: int
+    total_parents: int
+    total_children: int
+    policies: list[PolicyDocumentSummary]
+
+

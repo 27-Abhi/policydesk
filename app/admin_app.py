@@ -11,12 +11,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.graph.graph import get_graph
-from app.api.v1.router import get_dispute_status, review_dispute
+from app.api.v1.router import (
+    get_dispute_status,
+    review_dispute,
+    list_policies,
+    ingest_policy_json,
+    upload_policy_file,
+)
 from app.api.schemas import (
     ChatCompletionRequest,
     ChatDebugResponse,
     DisputeReviewRequest,
     DisputeReviewResponse,
+    PolicyListResponse,
+    PolicyIngestResponse,
 )
 from app.graph.escalation_nodes import get_escalation_tickets, resolve_escalation_ticket
 
@@ -97,6 +105,27 @@ admin_app.add_api_route(
     methods=["POST"],
     response_model=DisputeReviewResponse,
     summary="Review dispute case",
+)
+admin_app.add_api_route(
+    "/v1/policies",
+    list_policies,
+    methods=["GET"],
+    response_model=PolicyListResponse,
+    summary="List all indexed policy documents in the active vector store",
+)
+admin_app.add_api_route(
+    "/v1/policies/ingest",
+    ingest_policy_json,
+    methods=["POST"],
+    response_model=PolicyIngestResponse,
+    summary="Ingest a new policy document into the vector store via JSON payload",
+)
+admin_app.add_api_route(
+    "/v1/policies/upload",
+    upload_policy_file,
+    methods=["POST"],
+    response_model=PolicyIngestResponse,
+    summary="Upload and ingest a policy file (.pdf, .txt, .md) into the vector store",
 )
 
 

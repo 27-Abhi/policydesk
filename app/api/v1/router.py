@@ -2,14 +2,16 @@ import asyncio
 import json
 import time
 import uuid
+from pathlib import Path
 from typing import AsyncGenerator, Optional
-from fastapi import APIRouter, Depends, Header, HTTPException, Response
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
 from app.graph.graph import get_graph
-from app.prompts import format_dispute_pending
+from app.graph.rag_nodes import get_active_store
+from app.prompts import format_dispute_pending, OUT_OF_SCOPE_REFUSAL
 from app.api.schemas import (
     ChatCompletionChoice,
     ChatCompletionChunk,
@@ -21,6 +23,10 @@ from app.api.schemas import (
     DeltaMessage,
     DisputeReviewRequest,
     DisputeReviewResponse,
+    PolicyDocumentSummary,
+    PolicyIngestRequest,
+    PolicyIngestResponse,
+    PolicyListResponse,
 )
 
 api_v1_router = APIRouter(tags=["Chat Completions"])
@@ -35,8 +41,9 @@ async def _stream_chat_completion(
     completion_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
     created = int(time.time())
 
+    msg_history = [{"role": m.role, "content": m.content} for m in request.messages]
     final_state = graph.invoke(
-        {"user_input": prompt},
+        {"user_input": prompt, "messages": msg_history},
         config={"configurable": {"thread_id": thread_id}},
     )
 
@@ -48,7 +55,7 @@ async def _stream_chat_completion(
             f"Reference thread ID: {thread_id}."
         )
     else:
-        answer = final_state.get("answer") or f"Routed to: {final_state.get('route', 'out_of_scope')}"
+        answer = final_state.get("answer") or OUT_OF_SCOPE_REFUSAL
 
     # First event announces the assistant role
     initial_chunk = ChatCompletionChunk(
@@ -111,8 +118,9 @@ def create_chat_completion(
             headers={"X-Thread-ID": thread_id},
         )
 
+    msg_history = [{"role": m.role, "content": m.content} for m in request.messages]
     final_state = graph.invoke(
-        {"user_input": last_user_prompt},
+        {"user_input": last_user_prompt, "messages": msg_history},
         config={"configurable": {"thread_id": thread_id}},
     )
 
@@ -121,7 +129,7 @@ def create_chat_completion(
         tx_id = final_state.get("transaction_id", "GENERAL")
         answer = format_dispute_pending(dispute_id=dispute_id, transaction_id=tx_id, thread_id=thread_id)
     else:
-        answer = final_state.get("answer") or f"Routed to: {final_state.get('route', 'out_of_scope')}"
+        answer = final_state.get("answer") or OUT_OF_SCOPE_REFUSAL
 
     return ChatCompletionResponse(
         model=request.model,
@@ -288,5 +296,94 @@ def debug_chat_query(
         reranked_docs=final_state.get("reranked_docs") or [],
         answer=final_state.get("answer"),
         errors=final_state.get("errors") or [],
+    )
+
+
+@api_v1_router.get(
+    "/policies",
+    response_model=PolicyListResponse,
+    summary="List all indexed policy documents in the active vector store",
+)
+def list_policies():
+    store = get_active_store()
+    docs = store.list_documents()
+    return PolicyListResponse(
+        total_documents=len(docs),
+        total_parents=len(store.parents),
+        total_children=len(store.children),
+        policies=[PolicyDocumentSummary(**d) for d in docs],
+    )
+
+
+@api_v1_router.post(
+    "/policies/ingest",
+    response_model=PolicyIngestResponse,
+    summary="Ingest a new policy document into the vector store via JSON payload",
+)
+def ingest_policy_json(request: PolicyIngestRequest):
+    store = get_active_store()
+
+    # Persist policy text to data/policies/ so it reloads on restarts
+    policies_dir = Path("data/policies")
+    policies_dir.mkdir(parents=True, exist_ok=True)
+    safe_filename = f"{request.doc_id}.txt"
+    (policies_dir / safe_filename).write_text(request.text, encoding="utf-8")
+
+    parents_added, children_added = store.add_document(doc_id=request.doc_id, title=request.title, text=request.text)
+
+    return PolicyIngestResponse(
+        status="success",
+        message=f"Policy '{request.doc_id}' successfully ingested and indexed.",
+        doc_id=request.doc_id,
+        title=request.title,
+        parents_added=parents_added,
+        children_added=children_added,
+        total_parents=len(store.parents),
+        total_children=len(store.children),
+    )
+
+
+@api_v1_router.post(
+    "/policies/upload",
+    response_model=PolicyIngestResponse,
+    summary="Upload and ingest a policy file (.pdf, .txt, .md) into the vector store",
+)
+async def upload_policy_file(
+    file: UploadFile = File(...),
+    doc_id: Optional[str] = Form(None),
+    title: Optional[str] = Form(None),
+):
+    policies_dir = Path("data/policies")
+    policies_dir.mkdir(parents=True, exist_ok=True)
+
+    file_bytes = await file.read()
+    filename = file.filename or "uploaded_policy.txt"
+    dest_path = policies_dir / filename
+    dest_path.write_bytes(file_bytes)
+
+    if filename.lower().endswith(".pdf"):
+        from app.rag.ingest import load_pdf_text
+        text = load_pdf_text(dest_path)
+    else:
+        text = file_bytes.decode("utf-8", errors="replace")
+
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Uploaded file contains no readable text.")
+
+    final_doc_id = doc_id.strip() if doc_id and doc_id.strip() else Path(filename).stem.lower().replace(" ", "_")
+    final_title = title.strip() if title and title.strip() else Path(filename).stem.replace("_", " ").title()
+
+    store = get_active_store()
+    parents_added, children_added = store.add_document(doc_id=final_doc_id, title=final_title, text=text)
+
+    return PolicyIngestResponse(
+        status="success",
+        message=f"File '{filename}' successfully ingested as '{final_doc_id}'.",
+        doc_id=final_doc_id,
+        title=final_title,
+        parents_added=parents_added,
+        children_added=children_added,
+        total_parents=len(store.parents),
+        total_children=len(store.children),
     )
 
