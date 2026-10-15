@@ -56,7 +56,7 @@ def ingest_policies_directory(
     store: ParentChildVectorStore,
     dir_path: str | Path,
 ) -> int:
-    """Ingest all readable PDF files in a directory into the store."""
+    """Ingest all readable PDF and text policy files in a directory into the store."""
     directory = Path(dir_path)
     if not directory.exists() or not directory.is_dir():
         return 0
@@ -65,5 +65,19 @@ def ingest_policies_directory(
     for pdf_file in directory.glob("*.pdf"):
         added = ingest_pdf_file(store, pdf_file)
         total_parents_added += added
+
+    for txt_file in list(directory.glob("*.txt")) + list(directory.glob("*.md")):
+        assigned_id = txt_file.stem.lower()
+        assigned_title = txt_file.stem.replace("_", " ").title()
+        if any(p.get("doc_id") == assigned_id for p in store.parents.values()):
+            continue
+        try:
+            content = txt_file.read_text(encoding="utf-8")
+            if content.strip():
+                initial = len(store.parents)
+                store.add_document(doc_id=assigned_id, title=assigned_title, text=content)
+                total_parents_added += (len(store.parents) - initial)
+        except Exception:
+            pass
 
     return total_parents_added

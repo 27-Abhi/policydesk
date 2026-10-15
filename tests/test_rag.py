@@ -142,3 +142,62 @@ class TestEndToEndPolicyRAGGraph:
         assert result["is_relevant"] is True
         assert any("minor" in doc.lower() for doc in result["retrieved_docs"])
 
+    def test_surrounding_chunk_expansion(self):
+        store = ParentChildVectorStore()
+        store.add_document(
+            doc_id="unclaimed_test",
+            title="Unclaimed Test Policy",
+            text=(
+                "Paragraph 1 defines dormant accounts. Dormant accounts have no transactions.\n\n"
+                "Paragraph 2 states that dormant funds are transferred to the central reserve fund."
+            ),
+        )
+        # Search matches paragraph 1, surrounding window expansion attaches paragraph 2
+        results = store.retrieve("dormant accounts", top_k=1, expand_window=1)
+        assert len(results) == 1
+        assert "dormant accounts" in results[0]["text"].lower()
+        assert "central reserve fund" in results[0]["text"].lower()
+
+    def test_unclaimed_deposit_query_retrieves_deaf_transfer(self):
+        graph = build_graph()
+        result = graph.invoke({"user_input": "what happens to unclaimed deposit"})
+
+        assert result["intent"] == Intent.POLICY_QUESTION
+        assert result["route"] == "policy_question"
+        assert result["is_relevant"] is True
+        assert len(result["retrieved_docs"]) > 0
+        ans_lower = result["answer"].lower()
+        assert "deaf" in ans_lower or "depositor education" in ans_lower
+        assert "does not contain sufficient details" not in ans_lower
+
+    def test_dynamic_corpus_keyword_registration(self):
+        store = ParentChildVectorStore()
+        store.add_document(
+            doc_id="crypto_vault_policy",
+            title="Cryptocurrency Vault Guidelines",
+            text="Cryptocurrency vault storage is provided under strict cold-storage protocols. Vault fees apply."
+        )
+        keywords = store.get_corpus_keywords()
+        assert "cryptocurrency" in keywords or "vault" in keywords
+        store.remove_document("crypto_vault_policy")
+        assert "crypto_vault_policy" not in store.doc_keywords
+
+    def test_safe_deposit_locker_retrieval(self):
+        graph = build_graph()
+        result = graph.invoke({"user_input": "can I hire a safe deposit locker?"})
+
+        assert result["intent"] == Intent.POLICY_QUESTION
+        assert result["route"] == "policy_question"
+        assert result["is_relevant"] is True
+        assert "locker" in result["answer"].lower()
+
+    def test_typo_tolerant_lockjer_query(self):
+        graph = build_graph()
+        result = graph.invoke({"user_input": "can I hire a lockjer?"})
+
+        assert result["intent"] == Intent.POLICY_QUESTION
+        assert result["route"] == "policy_question"
+        assert result["is_relevant"] is True
+        assert "locker" in result["answer"].lower()
+
+
