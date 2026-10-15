@@ -3,6 +3,7 @@ import time
 import uuid
 
 from app.graph.state import PolicyDeskState
+from app.prompts import format_escalation_ticket
 
 logger = logging.getLogger("policydesk.escalation")
 
@@ -67,16 +68,11 @@ def handle_human_escalation(state: PolicyDeskState) -> dict:
         query_summary,
     )
 
-    answer = (
-        f"Your request has been transferred to Customer Care.\n\n"
-        f"Support Ticket Details:\n"
-        f"  • Ticket Number: #{ticket_id}\n"
-        f"  • Department: Customer Care\n"
-        f"  • Priority: {priority.replace('_', ' ')}\n"
-        f"  • Linked Account: {account_number}\n"
-        f"  • Estimated Wait Time: {wait_time}\n\n"
-        f"A Customer Care specialist has received your case details and will assist you shortly. "
-        f"Please keep your ticket number handy for reference."
+    answer = format_escalation_ticket(
+        ticket_id=ticket_id,
+        priority=priority,
+        account_number=account_number,
+        wait_time=wait_time,
     )
 
     return {

@@ -3,6 +3,14 @@ import re
 from typing import Optional
 
 from app.graph.state import PolicyDeskState
+from app.prompts import (
+    AUTH_LOCKOUT_TEMPLATE,
+    AUTH_OTP_RETRY_TEMPLATE,
+    AUTH_PHONE_NOT_FOUND_TEMPLATE,
+    AUTH_PHONE_PROMPT,
+    AUTH_UNLINKED_ACCOUNT,
+    format_account_overview,
+)
 from app.tools.bank_db import get_bank_db, mask_phone, normalize_phone
 
 logger = logging.getLogger("policydesk.account")
@@ -100,18 +108,17 @@ def handle_account_lookup(state: PolicyDeskState) -> dict:
             acc = bank_db.get_account_by_phone(auth_phone)
             if not acc:
                 return {
-                    "answer": "Authentication succeeded, but no linked bank account was found.",
+                    "answer": AUTH_UNLINKED_ACCOUNT,
                     "route": "account_lookup",
                     "authenticated": False,
                 }
 
-            answer = (
-                f"Authentication successful! Welcome back.\n\n"
-                f"Account Overview for {acc.account_type} ({acc.account_number}):\n"
-                f"  • Current Balance: ${acc.balance:,.2f}\n"
-                f"  • Pending Holds: ${acc.holds:,.2f}\n"
-                f"  • Overdraft Limit: ${acc.overdraft_limit:,.2f}\n\n"
-                f"Would you like to review your recent transactions or make an inquiry?"
+            answer = format_account_overview(
+                account_type=acc.account_type,
+                account_number=acc.account_number,
+                balance=acc.balance,
+                holds=acc.holds,
+                overdraft_limit=acc.overdraft_limit,
             )
             return {
                 "authenticated": True,
@@ -126,13 +133,13 @@ def handle_account_lookup(state: PolicyDeskState) -> dict:
                 return {
                     "authenticated": False,
                     "auth_step": "awaiting_phone",
-                    "answer": f"Security Alert: {msg}. Please re-enter your phone number to start a new verification session.",
+                    "answer": AUTH_LOCKOUT_TEMPLATE.format(msg=msg),
                     "route": "account_lookup",
                 }
             return {
                 "authenticated": False,
                 "auth_step": "awaiting_otp",
-                "answer": f"{msg} Please try again with the 6-digit code.",
+                "answer": AUTH_OTP_RETRY_TEMPLATE.format(msg=msg),
                 "route": "account_lookup",
             }
 
@@ -145,7 +152,7 @@ def handle_account_lookup(state: PolicyDeskState) -> dict:
             return {
                 "authenticated": False,
                 "auth_step": "awaiting_phone",
-                "answer": f"We could not locate an active account registered with {masked}. Please verify the phone number or contact Customer Care.",
+                "answer": AUTH_PHONE_NOT_FOUND_TEMPLATE.format(masked=masked),
                 "route": "account_lookup",
             }
 
@@ -162,9 +169,6 @@ def handle_account_lookup(state: PolicyDeskState) -> dict:
     return {
         "authenticated": False,
         "auth_step": "awaiting_phone",
-        "answer": (
-            "For your security and privacy, account balance and transaction lookups require two-factor identity verification. "
-            "Please provide your registered 10-digit mobile phone number to begin."
-        ),
+        "answer": AUTH_PHONE_PROMPT,
         "route": "account_lookup",
     }

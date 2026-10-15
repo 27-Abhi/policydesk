@@ -4,6 +4,8 @@ from typing import Optional
 from collections import Counter
 
 from app.graph.state import PolicyDeskState
+from app.llm.client import get_llm_client
+from app.prompts import POLICY_FALLBACK_ANSWER
 from app.rag.store import ParentChildVectorStore, get_default_vector_store, _tokenize, _cosine_similarity
 
 logger = logging.getLogger("policydesk.rag")
@@ -66,12 +68,14 @@ def rerank_documents(state: PolicyDeskState) -> dict:
 def generate_answer(state: PolicyDeskState) -> dict:
     is_relevant = state.get("is_relevant", False)
     reranked = state.get("reranked_docs") or []
+    query = state.get("user_input", "")
 
     if is_relevant and reranked:
         top_context = reranked[0]
-        answer = f"According to bank policy:\n\n{top_context}"
+        client = get_llm_client()
+        answer = client.generate(query=query, context=top_context)
     else:
-        answer = "No relevant policy documents found matching your inquiry."
+        answer = POLICY_FALLBACK_ANSWER
 
     logger.info("[RAG:GENERATE] Answer synthesized (Relevant: %s, Length: %d chars)", is_relevant, len(answer))
     return {

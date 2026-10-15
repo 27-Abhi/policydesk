@@ -5,6 +5,11 @@ from typing import Any
 from langgraph.types import interrupt
 
 from app.graph.state import PolicyDeskState
+from app.prompts import (
+    DISPUTE_INTERRUPT_ACTION,
+    format_dispute_approval,
+    format_dispute_rejection,
+)
 
 logger = logging.getLogger("policydesk.dispute")
 
@@ -44,7 +49,7 @@ def require_human_approval(state: PolicyDeskState) -> dict:
             "dispute_id": dispute_id,
             "transaction_id": transaction_id,
             "user_inquiry": user_input,
-            "action_required": "Compliance approval needed to execute dispute and dispatch funds credit.",
+            "action_required": DISPUTE_INTERRUPT_ACTION,
         }
     )
 
@@ -68,19 +73,11 @@ def finalize_dispute(state: PolicyDeskState) -> dict:
 
     if status == "approved":
         logger.info("[DISPUTE:DISPATCH] Automated dispatch email sent to disputes-ops@bank.internal for case %s", dispute_id)
-        answer = (
-            f"Your dispute for transaction {transaction_id} has been approved by compliance (Case #{dispute_id}). "
-            f"An automated dispatch has been sent to the backend operations team for processing. "
-            f"Eligible provisional credit will be credited within 10 business days."
-        )
+        answer = format_dispute_approval(transaction_id, dispute_id)
         notification_sent = True
     else:
         logger.info("[DISPUTE:REJECTED] Case %s marked as rejected. Notifying customer.", dispute_id)
-        answer = (
-            f"Your dispute request for transaction {transaction_id} (Case #{dispute_id}) has been reviewed and was not approved. "
-            f"Compliance notes: {comments}. "
-            f"If you have additional documentation, you may submit an appeal or speak with a representative."
-        )
+        answer = format_dispute_rejection(transaction_id, dispute_id, comments)
         notification_sent = False
 
     return {
