@@ -147,6 +147,8 @@ class TestCrossPortalIntegration:
             answer = chat_resp.json()["choices"][0]["message"]["content"]
             assert "3.5%" in answer or "staking" in answer.lower()
         finally:
+            from app.graph.rag_nodes import get_active_store
+            get_active_store().remove_document("crypto_asset_policy_2026")
             if test_file.exists():
                 test_file.unlink()
 
@@ -170,6 +172,8 @@ class TestCrossPortalIntegration:
             assert upload_resp.json()["status"] == "success"
             assert upload_resp.json()["doc_id"] == "overdraft_courtesy"
         finally:
+            from app.graph.rag_nodes import get_active_store
+            get_active_store().remove_document("overdraft_courtesy")
             if test_file.exists():
                 test_file.unlink()
 

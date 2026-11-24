@@ -3,7 +3,7 @@
 -- Optimized for PostgreSQL 16 (AWS EC2 t2.micro / t3.micro Free Tier)
 -- =====================================================================
 
--- 1. Accounts Table (Core Banking & 2FA State)
+-- 1. Accounts Table (Core Banking & Row-Locked 2FA State)
 CREATE TABLE IF NOT EXISTS accounts (
     account_number VARCHAR(16) PRIMARY KEY,
     customer_name VARCHAR(64) NOT NULL,
@@ -13,11 +13,16 @@ CREATE TABLE IF NOT EXISTS accounts (
     holds NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
     overdraft_limit NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
     totp_secret VARCHAR(64),
+    otp_code VARCHAR(12),
+    otp_expires_at TIMESTAMPTZ,
     failed_auth_attempts INT NOT NULL DEFAULT 0,
     is_locked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS otp_code VARCHAR(12);
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_accounts_phone ON accounts(phone_number);
 
@@ -67,17 +72,17 @@ CREATE INDEX IF NOT EXISTS idx_escalations_status ON escalations(status);
 -- =====================================================================
 
 INSERT INTO accounts (account_number, customer_name, phone_number, account_type, balance, holds, overdraft_limit, totp_secret, failed_auth_attempts, is_locked)
-VALUES 
-    ('ACCT-789012', 'Alex Morgan', '+15550192834', 'Checking', 3450.00, 120.00, 500.00, 'JBSWY3DPEHPK3PXP', 0, FALSE),
-    ('ACCT-345678', 'Jordan Lee', '+15550149921', 'Savings', 12850.50, 0.00, 0.00, 'JBSWY3DPEHPK3PXQ', 0, FALSE)
+VALUES
+    ('ACC-1049', 'Alex Morgan', '+15550192834', 'Primary Checking', 4250.00, 0.00, 500.00, 'JBSWY3DPEHPK3PXP', 0, FALSE),
+    ('ACC-2088', 'Jordan Lee', '+15550149921', 'High-Yield Savings', 18420.50, 250.00, 0.00, 'JBSWY3DPEHPK3PXQ', 0, FALSE)
 ON CONFLICT (account_number) DO NOTHING;
 
 INSERT INTO transactions (transaction_id, account_number, timestamp, description, amount, tx_type, is_flagged)
-VALUES 
-    ('TXN-9011', 'ACCT-789012', NOW() - INTERVAL '1 day', 'Corner Grocery Store', 42.50, 'DEBIT', FALSE),
-    ('TXN-9012', 'ACCT-789012', NOW() - INTERVAL '2 days', 'Luxury Electronics Retail', 850.00, 'DEBIT', TRUE),
-    ('TXN-9013', 'ACCT-789012', NOW() - INTERVAL '3 days', 'Payroll Direct Deposit', 2100.00, 'CREDIT', FALSE),
-    ('TXN-9014', 'ACCT-789012', NOW() - INTERVAL '4 days', 'Downtown Coffee Roasters', 15.75, 'DEBIT', FALSE),
-    ('TXN-9015', 'ACCT-789012', NOW() - INTERVAL '5 days', 'Metro Transit Commuter Pass', 68.20, 'DEBIT', FALSE),
-    ('TXN-8001', 'ACCT-345678', NOW() - INTERVAL '10 days', 'Initial Opening Deposit', 12850.50, 'CREDIT', FALSE)
+VALUES
+    ('TXN-9011', 'ACC-1049', NOW() - INTERVAL '1 day', 'Direct Deposit - ACME Payroll', 2450.00, 'CREDIT', FALSE),
+    ('TXN-9012', 'ACC-1049', NOW() - INTERVAL '2 days', 'Whole Foods Market', 84.50, 'DEBIT', TRUE),
+    ('TXN-9013', 'ACC-1049', NOW() - INTERVAL '3 days', 'City Power & Electric', 120.00, 'DEBIT', FALSE),
+    ('TXN-9014', 'ACC-1049', NOW() - INTERVAL '4 days', 'Starbucks Coffee', 15.75, 'DEBIT', FALSE),
+    ('TXN-8801', 'ACC-2088', NOW() - INTERVAL '5 days', 'Transfer from Primary Checking', 5000.00, 'CREDIT', FALSE),
+    ('TXN-8802', 'ACC-2088', NOW() - INTERVAL '10 days', 'Monthly Interest Payment (4.25% APY)', 62.15, 'CREDIT', FALSE)
 ON CONFLICT (transaction_id) DO NOTHING;

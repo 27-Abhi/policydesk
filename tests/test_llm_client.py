@@ -35,6 +35,7 @@ class TestDeterministicMockClient:
 class TestProviderFactoryResolution:
     def test_default_mock_when_no_env_keys(self, monkeypatch):
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.delenv("OPEN_AI_API_KEY", raising=False)
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.delenv("OLLAMA_BASE_URL", raising=False)
 
@@ -44,6 +45,7 @@ class TestProviderFactoryResolution:
     def test_anthropic_priority(self, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
         monkeypatch.setenv("OPENAI_API_KEY", "sk-proj-test-key")
+        monkeypatch.delenv("OPEN_AI_API_KEY", raising=False)
 
         client = get_llm_client()
         assert isinstance(client, AnthropicClient)
@@ -52,6 +54,7 @@ class TestProviderFactoryResolution:
     def test_openai_selection(self, monkeypatch):
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.setenv("OPENAI_API_KEY", "sk-proj-test-key")
+        monkeypatch.delenv("OPEN_AI_API_KEY", raising=False)
 
         client = get_llm_client()
         assert isinstance(client, OpenAIClient)
@@ -60,6 +63,7 @@ class TestProviderFactoryResolution:
     def test_ollama_selection(self, monkeypatch):
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.delenv("OPEN_AI_API_KEY", raising=False)
         monkeypatch.setenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
         client = get_llm_client()

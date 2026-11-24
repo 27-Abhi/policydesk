@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "q001",
+    "query": "What types of deposit accounts does the bank offer?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p8", "comprehensive_deposit_policy_p9", "comprehensive_deposit_policy_p10", "comprehensive_deposit_policy_p11"],
+    "expected_keywords": ["demand deposits", "savings deposit", "current account", "term deposits", "recurring"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q002",
+    "query": "What is a Basic Savings Bank Deposit Account and what are its features?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p28"],
+    "expected_keywords": ["BSBDA", "zero initial pay-in", "zero balance", "basic banking facilities"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q003",
+    "query": "What is the minimum deposit amount for a bulk term deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p28"],
+    "expected_keywords": ["bulk deposit", "3 crores", "single rupee term deposits"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q004",
+    "query": "Can a current account earn interest?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p10", "comprehensive_deposit_policy_p49"],
+    "expected_keywords": ["current account", "non-interest-bearing", "no interest", "KGC"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q005",
+    "query": "Who can open a savings bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p16", "comprehensive_deposit_policy_p20"],
+    "expected_keywords": ["savings bank account", "eligible person", "individual", "joint account", "minor"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q006",
+    "query": "What KYC documents are required to open a bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p12", "comprehensive_deposit_policy_p19"],
+    "expected_keywords": ["KYC", "identity", "address", "PAN", "Form 60", "due diligence"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q007",
+    "query": "Can I open a bank account online or do I need to visit the branch?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p13"],
+    "expected_keywords": ["digitally", "account opening", "option"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q008",
+    "query": "What entities are eligible to open a current account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p17"],
+    "expected_keywords": ["current account", "individuals", "sole proprietary", "partnership firms", "private and public limited companies", "LLPs", "HUFs"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q009",
+    "query": "What happens if I fail to maintain the minimum balance in my savings account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p14", "comprehensive_deposit_policy_p97", "comprehensive_deposit_policy_p98"],
+    "expected_keywords": ["minimum balance", "charges", "penal", "30 days", "shortfall", "AMB"],
+    "is_relevant": true,
+    "category": "account_maintenance"
+  },
+  {
+    "id": "q010",
+    "query": "How far in advance will the bank notify me before changing service fees?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p97"],
+    "expected_keywords": ["one month in advance", "service", "fees", "communicated"],
+    "is_relevant": true,
+    "category": "service_charges"
+  },
+  {
+    "id": "q011",
+    "query": "Can the bank make my account balance go negative by charging AMB fees?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p99"],
+    "expected_keywords": ["negative", "AMB charges", "account balance"],
+    "is_relevant": true,
+    "category": "service_charges"
+  },
+  {
+    "id": "q012",
+    "query": "Can a minor open a bank account independently?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p20", "comprehensive_deposit_policy_p22"],
+    "expected_keywords": ["minor", "10 years", "independently", "guardian"],
+    "is_relevant": true,
+    "category": "minor_accounts"
+  },
+  {
+    "id": "q013",
+    "query": "What account types can a minor open?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p21", "comprehensive_deposit_policy_p22"],
+    "expected_keywords": ["minor", "savings bank account", "term deposit account", "guardian", "natural guardian"],
+    "is_relevant": true,
+    "category": "minor_accounts"
+  },
+  {
+    "id": "q014",
+    "query": "Can a minor get an overdraft on their account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p22"],
+    "expected_keywords": ["minor", "no overdraft", "overdraft"],
+    "is_relevant": true,
+    "category": "minor_accounts"
+  },
+  {
+    "id": "q015",
+    "query": "What happens to a minor's account when they turn 18?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p22"],
+    "expected_keywords": ["minor", "majority", "KYC documents", "conversion", "major"],
+    "is_relevant": true,
+    "category": "minor_accounts"
+  },
+  {
+    "id": "q016",
+    "query": "Can an illiterate person open a bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p23", "comprehensive_deposit_policy_p24"],
+    "expected_keywords": ["illiterate", "witness", "thumb impression", "no cheque book"],
+    "is_relevant": true,
+    "category": "special_accounts"
+  },
+  {
+    "id": "q017",
+    "query": "Does the bank provide cheque book facility to illiterate customers?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p23"],
+    "expected_keywords": ["illiterate", "no cheque book", "cheque book facility"],
+    "is_relevant": true,
+    "category": "special_accounts"
+  },
+  {
+    "id": "q018",
+    "query": "Are visually impaired customers given ATM and debit card facilities?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p25"],
+    "expected_keywords": ["visually impaired", "ATM", "debit card", "cheque book", "literate"],
+    "is_relevant": true,
+    "category": "special_accounts"
+  },
+  {
+    "id": "q019",
+    "query": "How can a person with autism or cerebral palsy open a bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p26"],
+    "expected_keywords": ["autism", "cerebral palsy", "legal guardian", "District Court", "Mental Health Act", "National Trust"],
+    "is_relevant": true,
+    "category": "special_accounts"
+  },
+  {
+    "id": "q020",
+    "query": "How does the bank treat transgender customers?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p27"],
+    "expected_keywords": ["transgender", "third gender", "no discrimination", "equally"],
+    "is_relevant": true,
+    "category": "special_accounts"
+  },
+  {
+    "id": "q021",
+    "query": "Does the bank offer any special accounts for pensioners?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p27"],
+    "expected_keywords": ["pensioners", "pension accounts", "special product", "benefits"],
+    "is_relevant": true,
+    "category": "special_accounts"
+  },
+  {
+    "id": "q022",
+    "query": "What is the FCRA savings account and who needs it?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p17", "comprehensive_deposit_policy_p18"],
+    "expected_keywords": ["FCRA", "foreign contribution", "separate", "domestic funds", "SBI main account"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q023",
+    "query": "How does the Either or Survivor mandate work in a joint account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p30"],
+    "expected_keywords": ["either or survivor", "joint account", "death", "survivor", "final balance"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q024",
+    "query": "What is the Former or Survivor mandate in a joint deposit account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p31"],
+    "expected_keywords": ["former or survivor", "joint account", "death", "maturity"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q025",
+    "query": "Can joint account operation mandate be changed after the account is opened?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p29"],
+    "expected_keywords": ["mandate", "modified", "consent", "joint account holders"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q026",
+    "query": "Can I give power of attorney to someone to operate my account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p32"],
+    "expected_keywords": ["power of attorney", "mandate", "operate", "behalf"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q027",
+    "query": "Can I add or remove a joint account holder from my account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p37", "comprehensive_deposit_policy_p38"],
+    "expected_keywords": ["addition", "deletion", "joint account holder", "first holder", "death"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q028",
+    "query": "Can the first holder be removed from a joint account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p37"],
+    "expected_keywords": ["first holder", "cannot be deleted", "death of holder"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q029",
+    "query": "What happens to a joint fixed deposit if one of the holders dies?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p32", "comprehensive_deposit_policy_p72", "comprehensive_deposit_policy_p73"],
+    "expected_keywords": ["joint fixed deposit", "survivorship clause", "death", "survivor", "legal heirs"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q030",
+    "query": "How does the nomination facility work for bank accounts?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p34", "comprehensive_deposit_policy_p35"],
+    "expected_keywords": ["nomination", "nominee", "trustee", "legal heirs", "death"],
+    "is_relevant": true,
+    "category": "nomination"
+  },
+  {
+    "id": "q031",
+    "query": "Can I nominate more than one person for my bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p36"],
+    "expected_keywords": ["nomination", "one individual only", "sole proprietary"],
+    "is_relevant": true,
+    "category": "nomination"
+  },
+  {
+    "id": "q032",
+    "query": "Can I nominate a minor as the nominee for my bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p36"],
+    "expected_keywords": ["nomination", "minor", "appointee", "minority period"],
+    "is_relevant": true,
+    "category": "nomination"
+  },
+  {
+    "id": "q033",
+    "query": "Can a member of the LGBTQ community be added as a nominee?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p36"],
+    "expected_keywords": ["queer community", "nominee", "bank account"],
+    "is_relevant": true,
+    "category": "nomination"
+  },
+  {
+    "id": "q034",
+    "query": "Can I change or cancel a nomination after it has been made?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p36"],
+    "expected_keywords": ["nomination", "cancelled", "changed", "modified", "consent"],
+    "is_relevant": true,
+    "category": "nomination"
+  },
+  {
+    "id": "q035",
+    "query": "Is nomination available on safe deposit lockers?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p35", "comprehensive_deposit_policy_p92"],
+    "expected_keywords": ["nomination", "safe deposit lockers", "safe custody", "individual"],
+    "is_relevant": true,
+    "category": "nomination"
+  },
+  {
+    "id": "q036",
+    "query": "When does a savings account become inoperative or dormant?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p40"],
+    "expected_keywords": ["inoperative", "dormant", "2 years", "no transactions", "savings", "current account"],
+    "is_relevant": true,
+    "category": "dormant_accounts"
+  },
+  {
+    "id": "q037",
+    "query": "Will I be notified before my account becomes dormant?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p40"],
+    "expected_keywords": ["SMS", "email", "inoperative", "dormant", "communications"],
+    "is_relevant": true,
+    "category": "dormant_accounts"
+  },
+  {
+    "id": "q038",
+    "query": "Can I make debit transactions from a dormant account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p41"],
+    "expected_keywords": ["debit transactions", "inoperative", "dormant", "KYC", "not allowed"],
+    "is_relevant": true,
+    "category": "dormant_accounts"
+  },
+  {
+    "id": "q039",
+    "query": "What happens to unclaimed deposits after ten years?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p41", "comprehensive_deposit_policy_p42"],
+    "expected_keywords": ["unclaimed", "ten years", "DEAF", "Depositor Education and Awareness Fund"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q040",
+    "query": "What is the DEAF scheme and how does it apply to unclaimed deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p42", "comprehensive_deposit_policy_p43"],
+    "expected_keywords": ["DEAF", "Depositor Education and Awareness Fund", "ten years", "RBI", "credited"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q041",
+    "query": "Can I still claim my money after it has been transferred to the DEAF fund?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p43", "comprehensive_deposit_policy_p44"],
+    "expected_keywords": ["unclaimed", "DEAF", "claim", "Bank liable", "refund"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q042",
+    "query": "What interest is paid on an unclaimed term deposit before transfer to DEAF?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p44"],
+    "expected_keywords": ["unclaimed term deposit", "savings interest", "DEAF", "maturity", "fund transfer"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q043",
+    "query": "How can I find out if I have an unclaimed deposit with the bank?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p45"],
+    "expected_keywords": ["unclaimed", "bank website", "UDGAM Portal", "inoperative", "ten years"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q044",
+    "query": "Can I transfer my savings account to another branch?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p47"],
+    "expected_keywords": ["transfer", "branch", "savings account", "current account", "request"],
+    "is_relevant": true,
+    "category": "account_maintenance"
+  },
+  {
+    "id": "q045",
+    "query": "Is passbook facility available for non-individual savings account holders?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p46"],
+    "expected_keywords": ["passbook", "non-individual", "savings account", "not available"],
+    "is_relevant": true,
+    "category": "account_maintenance"
+  },
+  {
+    "id": "q046",
+    "query": "Who decides the interest rates on deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p47", "comprehensive_deposit_policy_p48"],
+    "expected_keywords": ["ALCO", "Asset Liability Committee", "board", "interest rates", "deposits"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q047",
+    "query": "How is interest calculated on savings bank accounts?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p48", "comprehensive_deposit_policy_p49"],
+    "expected_keywords": ["savings bank account", "daily balances", "quarterly intervals", "one lakh", "uniform interest rate"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q048",
+    "query": "Do savings accounts above one lakh rupees get a different interest rate?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p48", "comprehensive_deposit_policy_p49"],
+    "expected_keywords": ["differential rates", "one lakh", "savings bank account", "day end balance"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q049",
+    "query": "Do senior citizens get additional interest on term deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p50"],
+    "expected_keywords": ["senior citizens", "additional interest rates", "term deposits", "resident deposits", "5 crores"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q050",
+    "query": "Do bank staff get better interest rates on deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p51"],
+    "expected_keywords": ["staff", "retired staff", "additional interest rate", "dual benefits", "senior citizen rate"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q051",
+    "query": "Does an HUF where the karta is a senior citizen get senior citizen interest rates?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p52"],
+    "expected_keywords": ["HUF", "Karta", "senior citizen", "additional interest rate", "not applicable"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q052",
+    "query": "How is interest calculated on term deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p52", "comprehensive_deposit_policy_p53"],
+    "expected_keywords": ["term deposits", "quarterly intervals", "Indian Banks Association", "formula"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q053",
+    "query": "How does the bank calculate interest in a leap year?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p54"],
+    "expected_keywords": ["leap year", "366 days", "365 days", "INR deposits", "actual number of days"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q054",
+    "query": "Are interest rates the same across all branches?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p54", "comprehensive_deposit_policy_p55"],
+    "expected_keywords": ["uniform", "all branches", "no discrimination", "same date"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q055",
+    "query": "Can the bank refuse to accept multiple deposits split from a larger amount?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p55"],
+    "expected_keywords": ["refuse", "splitting", "higher deposit", "bulk deposit", "better rate"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q056",
+    "query": "Are bulk deposit interest rates displayed on the bank website?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p57"],
+    "expected_keywords": ["bulk deposit rates", "website", "discretion", "discloses"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q057",
+    "query": "What is the minimum tenor for a reinvestment or interest payout deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p57"],
+    "expected_keywords": ["reinvestment deposits", "6 months", "tenor", "interest pay-out"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q058",
+    "query": "Can I withdraw my term deposit before maturity?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p58", "comprehensive_deposit_policy_p59"],
+    "expected_keywords": ["premature withdrawal", "term deposit", "before maturity", "1 cr", "2 cr"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q059",
+    "query": "Are term deposits below 1 crore required to have a premature withdrawal option?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p59"],
+    "expected_keywords": ["1 cr", "premature-withdrawal-facility", "singly or jointly", "regulation"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q060",
+    "query": "What are the options for term deposits of 2 crore and above regarding premature withdrawal?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p60"],
+    "expected_keywords": ["2 cr and above", "premature withdrawal", "non-withdrawable", "differential rate", "option"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q061",
+    "query": "Is there a penalty for premature withdrawal of a term deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p61"],
+    "expected_keywords": ["penalty", "premature withdrawal", "ALCO", "minimum tenor", "not applicable"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q062",
+    "query": "What is the minimum period a term deposit must run to earn any interest?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p62"],
+    "expected_keywords": ["7 days", "minimum tenor", "zero interest", "premature withdrawal"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q063",
+    "query": "What happens to a term deposit if no maturity instructions are given?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p33", "comprehensive_deposit_policy_p64", "comprehensive_deposit_policy_p65"],
+    "expected_keywords": ["auto renewal", "maturity instructions", "prevailing rates", "same tenor"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q064",
+    "query": "Which types of deposits are not auto-renewed on maturity?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p65"],
+    "expected_keywords": ["tax saver fixed deposits", "FD without premature closure", "recurring deposits", "exceptions"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q065",
+    "query": "For a cumulative fixed deposit, what gets renewed on maturity?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p66"],
+    "expected_keywords": ["cumulative fixed deposit", "maturity proceeds", "renewed", "principal"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q066",
+    "query": "Can I get a loan against my term deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p66"],
+    "expected_keywords": ["loan", "overdraft", "term deposits", "security documents"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q067",
+    "query": "Can I get a loan against a tax saver or recurring deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p67"],
+    "expected_keywords": ["no advance", "tax saver deposit", "recurring deposit"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q068",
+    "query": "When does the bank deduct TDS on fixed deposit interest?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p67"],
+    "expected_keywords": ["TDS", "tax deducted at source", "threshold", "FDs", "RDs", "aggregate interest"],
+    "is_relevant": true,
+    "category": "tax"
+  },
+  {
+    "id": "q069",
+    "query": "How can I avoid TDS deduction on my fixed deposit interest?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p67", "comprehensive_deposit_policy_p68"],
+    "expected_keywords": ["Form 15G", "Form 15H", "TDS waiver", "resident individuals", "financial year"],
+    "is_relevant": true,
+    "category": "tax"
+  },
+  {
+    "id": "q070",
+    "query": "What happens to Form 15G submission if my account is inoperative?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p68"],
+    "expected_keywords": ["inoperative", "no PAN", "higher rate", "Form 15G", "Form 15H", "not accepted"],
+    "is_relevant": true,
+    "category": "tax"
+  },
+  {
+    "id": "q071",
+    "query": "How is the balance paid out when a single account holder dies?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p70", "comprehensive_deposit_policy_p71"],
+    "expected_keywords": ["deceased", "nominee", "legal heir", "single depositor", "balance outstanding"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q072",
+    "query": "What happens to a joint account when one account holder dies?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p72", "comprehensive_deposit_policy_p73"],
+    "expected_keywords": ["joint deposit account", "death", "legal heirs", "survivor", "nominee"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q073",
+    "query": "How is the balance of a deceased person's account paid without nomination and no disputes?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p74"],
+    "expected_keywords": ["no nomination", "no disputes", "legal heirs", "joint application", "indemnity", "board limit"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q074",
+    "query": "Is there a penalty for prematurely closing a term deposit due to the death of the primary holder?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p75"],
+    "expected_keywords": ["death", "primary holder", "premature termination", "no penal charge", "proof of death"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q075",
+    "query": "What interest rate is paid on a current account after the account holder dies?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p77"],
+    "expected_keywords": ["current account", "sole proprietorship", "death", "savings deposit rate", "date of payment"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q076",
+    "query": "How long does it take before a missing person can be presumed dead for settling bank claims?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p78"],
+    "expected_keywords": ["missing person", "seven years", "presumption of death", "Indian Evidence Act", "section 107"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q077",
+    "query": "What interest is paid on a deceased depositor's term deposit after its maturity date?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p79", "comprehensive_deposit_policy_p80"],
+    "expected_keywords": ["deceased", "maturity", "contracted rate", "savings interest", "date of maturity"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q078",
+    "query": "Is TDS deducted on interest paid to the nominee of a deceased depositor?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p81"],
+    "expected_keywords": ["TDS", "deceased account", "interest", "income tax act", "prevailing rate"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q079",
+    "query": "What banking channels are available for electronic transactions?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p83"],
+    "expected_keywords": ["ATM", "internet banking", "mobile banking", "SMS banking", "WhatsApp banking", "phone banking"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q080",
+    "query": "What mobile number requirements are there for opening a bank account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p82"],
+    "expected_keywords": ["mobile number", "mobile banking", "savings account", "internet banking"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q081",
+    "query": "Can I give standing instructions for recurring fund transfers?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p87"],
+    "expected_keywords": ["standing instructions", "transfer", "remittance", "same branch", "other branch"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q082",
+    "query": "What is NACH and how is it used?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p87", "comprehensive_deposit_policy_p88"],
+    "expected_keywords": ["NACH", "National Automated Clearing House", "direct debit", "utility bills", "EMI", "insurance premium"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q083",
+    "query": "How do I stop a cheque I have already issued?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p88"],
+    "expected_keywords": ["stop payment", "cheque", "charges", "depositors"],
+    "is_relevant": true,
+    "category": "cheque_services"
+  },
+  {
+    "id": "q084",
+    "query": "Can I exchange soiled or damaged currency notes at the bank?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p88", "comprehensive_deposit_policy_p89"],
+    "expected_keywords": ["mutilated", "soiled notes", "exchange", "RBI note refund rules", "coins"],
+    "is_relevant": true,
+    "category": "cash_services"
+  },
+  {
+    "id": "q085",
+    "query": "How do I report a lost or stolen debit card?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p90"],
+    "expected_keywords": ["ATM card", "debit card", "hot listing", "net banking", "phone banking", "24 hours"],
+    "is_relevant": true,
+    "category": "card_services"
+  },
+  {
+    "id": "q086",
+    "query": "Can a minor hire a safe deposit locker?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p92"],
+    "expected_keywords": ["safe deposit locker", "not a minor", "individual", "hired"],
+    "is_relevant": true,
+    "category": "lockers"
+  },
+  {
+    "id": "q087",
+    "query": "Who is eligible to hire a safe deposit locker at the bank?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p91", "comprehensive_deposit_policy_p92"],
+    "expected_keywords": ["safe deposit locker", "individual", "HUFs", "firms", "limited companies", "societies", "trusts"],
+    "is_relevant": true,
+    "category": "lockers"
+  },
+  {
+    "id": "q088",
+    "query": "What happens to the contents of a locker when the locker holder dies and there is no nomination?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p93", "comprehensive_deposit_policy_p94"],
+    "expected_keywords": ["locker", "no nomination", "legal heirs", "indemnity", "release"],
+    "is_relevant": true,
+    "category": "lockers"
+  },
+  {
+    "id": "q089",
+    "query": "Can joint locker holders give a mandate for access if one holder dies?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p93"],
+    "expected_keywords": ["joint locker holders", "mandate", "access", "death", "deposit accounts"],
+    "is_relevant": true,
+    "category": "lockers"
+  },
+  {
+    "id": "q090",
+    "query": "What is the maximum deposit insurance coverage per depositor?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p102"],
+    "expected_keywords": ["DICGC", "insured", "5 lakhs", "Rs.5,00,000", "principal and interest", "same right"],
+    "is_relevant": true,
+    "category": "deposit_insurance"
+  },
+  {
+    "id": "q091",
+    "query": "What types of deposits are covered under DICGC insurance?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p101", "comprehensive_deposit_policy_p102"],
+    "expected_keywords": ["DICGC", "savings", "fixed", "current", "recurring", "insurance scheme"],
+    "is_relevant": true,
+    "category": "deposit_insurance"
+  },
+  {
+    "id": "q092",
+    "query": "Can the bank share my account information with third parties?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p100"],
+    "expected_keywords": ["secrecy", "third person", "consent", "compulsion of law", "disclosure"],
+    "is_relevant": true,
+    "category": "customer_protection"
+  },
+  {
+    "id": "q093",
+    "query": "Can the bank use my personal information for cross-selling products?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p99"],
+    "expected_keywords": ["customer information", "cross selling", "explicit consent", "subsidiaries", "affiliates"],
+    "is_relevant": true,
+    "category": "customer_protection"
+  },
+  {
+    "id": "q094",
+    "query": "What do I do if I am unsatisfied with the bank's response to my complaint?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p103", "comprehensive_deposit_policy_p104"],
+    "expected_keywords": ["complaint", "grievance", "banking ombudsman", "one month", "Reserve Bank of India"],
+    "is_relevant": true,
+    "category": "grievance_redressal"
+  },
+  {
+    "id": "q095",
+    "query": "Where can I find the bank's complaint redressal details?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p103"],
+    "expected_keywords": ["complaint", "grievance", "branch premises", "website", "designated authority"],
+    "is_relevant": true,
+    "category": "grievance_redressal"
+  },
+  {
+    "id": "q096",
+    "query": "What are the interest rates on NRE and NRO savings accounts?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p104", "comprehensive_deposit_policy_p105"],
+    "expected_keywords": ["NRE", "NRO", "savings account", "daily basis", "quarterly intervals"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q097",
+    "query": "What is the minimum tenure for an NRE term deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p106"],
+    "expected_keywords": ["NRE", "FCNR", "minimum tenor", "one year", "NRO", "seven days"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q098",
+    "query": "Do NRE or NRO deposits offer senior citizen or staff interest rate benefits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p107"],
+    "expected_keywords": ["NRE", "NRO", "FCNR", "senior citizen", "staff", "not applicable"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q099",
+    "query": "Is there a penalty for premature withdrawal of NRE or FCNR deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p119", "comprehensive_deposit_policy_p120"],
+    "expected_keywords": ["NRE", "FCNR", "premature withdrawal", "no penalty", "penalty"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q100",
+    "query": "Can I get an overdraft against my NRO deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p111"],
+    "expected_keywords": ["overdraft", "NRO deposits", "NRE", "FCNR", "India", "outside India"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q101",
+    "query": "Can I get an overdraft against RFC deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p121"],
+    "expected_keywords": ["overdraft", "RFC deposits", "cannot be given"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q102",
+    "query": "What is the maximum tenure for an RFC deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p120"],
+    "expected_keywords": ["RFC", "Resident Foreign Currency", "15 days", "3 years", "minimum tenure"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q103",
+    "query": "Can I convert my NRE deposit to an RFC deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p121", "comprehensive_deposit_policy_p122"],
+    "expected_keywords": ["NRE", "FCNR", "RFC", "converted", "resident status", "NRI"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q104",
+    "query": "Can the bank mark a lien against my NRE savings deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p122"],
+    "expected_keywords": ["lien", "NRE saving deposits", "prohibition", "direct or indirect"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q105",
+    "query": "How is interest calculated on FCNR deposits for foreign currency?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p109"],
+    "expected_keywords": ["FCNR", "RFC", "360 days", "foreign currency deposits", "compounding"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q106",
+    "query": "Does the bank issue TDS certificates for NRO deposit interest?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p110"],
+    "expected_keywords": ["TDS certificate", "NRO", "interest", "income tax act", "deduct tax"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q107",
+    "query": "What are the maturity tenors available for FCNR(B) deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p124"],
+    "expected_keywords": ["FCNR", "one year", "two years", "three years", "four years", "five years"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q108",
+    "query": "Can FCNR deposits be renewed for more than five years?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p124"],
+    "expected_keywords": ["FCNR", "five years", "not accept", "renew", "recurring deposits"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q109",
+    "query": "Does the bank offer floating interest rates on FCNR deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p125"],
+    "expected_keywords": ["FCNR", "floating rates", "does not offer"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q110",
+    "query": "What is the interest rate ceiling for FCNR deposits with a 4-year tenure?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p127"],
+    "expected_keywords": ["FCNR", "3 years and above", "350 basis points", "Overnight Alternative Reference Rate", "Swap"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q111",
+    "query": "How is the renewal interest rate decided for FCNR deposits renewed within 14 days of maturity?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p129"],
+    "expected_keywords": ["FCNR", "renewal", "14 days", "maturity", "lower", "prevailing"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q112",
+    "query": "What interest is paid on an FCNR deposit if the holder dies before maturity?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p130", "comprehensive_deposit_policy_p131"],
+    "expected_keywords": ["FCNR", "deceased", "before maturity", "contracted rate", "no penalty"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q113",
+    "query": "What happens to an FCNR deposit when the NRI account holder returns to India permanently?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p134", "comprehensive_deposit_policy_p135"],
+    "expected_keywords": ["FCNR", "NRI", "return to India", "permanent settlement", "contracted rate", "RFC account"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q114",
+    "query": "What happens to a deceased NRI's NRE term deposit if the claimants are residents?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p123"],
+    "expected_keywords": ["NRE term deposit", "deceased", "residents", "domestic rupee term deposit", "maturity"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q115",
+    "query": "What is the bank's policy if a deposit matures on a non-business day?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p115"],
+    "expected_keywords": ["non-business working day", "contracted rate", "maturity", "succeeding working day", "original principal"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q116",
+    "query": "Can the bank give advances against term deposits of another bank?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p142"],
+    "expected_keywords": ["advances", "term deposits", "other banks", "grant loans", "prohibited"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q117",
+    "query": "What is the maximum gift value the bank can give to depositors when accepting deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p139"],
+    "expected_keywords": ["gifts", "rupees two hundred and fifty", "IBA", "depositors", "accepting deposits"],
+    "is_relevant": true,
+    "category": "banking_prohibitions"
+  },
+  {
+    "id": "q118",
+    "query": "Can the bank offer lotteries or prize schemes to attract deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p138"],
+    "expected_keywords": ["prize", "lottery", "free trips", "deposits", "chance", "mobilizing"],
+    "is_relevant": true,
+    "category": "banking_prohibitions"
+  },
+  {
+    "id": "q119",
+    "query": "Can the bank advertise only the compound interest rate without showing the simple interest rate?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p140", "comprehensive_deposit_policy_p141"],
+    "expected_keywords": ["compounded yield", "simple interest", "advertisement", "actual rate", "indicated"],
+    "is_relevant": true,
+    "category": "banking_prohibitions"
+  },
+  {
+    "id": "q120",
+    "query": "Is BSBDA the same as a regular savings account?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p28"],
+    "expected_keywords": ["BSBDA", "basic savings bank deposit account", "zero balance", "basic banking facilities"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q121",
+    "query": "Can a co-operative society open a savings account with the bank?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p148"],
+    "expected_keywords": ["societies", "savings account", "schedule I", "permitted"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q122",
+    "query": "Does the bank review its deposit policy regularly?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p136"],
+    "expected_keywords": ["policy revision", "reviewed annually"],
+    "is_relevant": true,
+    "category": "policy"
+  },
+  {
+    "id": "q123",
+    "query": "What is the bank's FARSight dashboard?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p85"],
+    "expected_keywords": ["FARSight", "dashboard", "CASA", "TD accounts", "PFMS", "transactions", "balances"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q124",
+    "query": "What collection modes does CollectNow support?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p86"],
+    "expected_keywords": ["CollectNow", "debit card", "credit card", "UPI", "NEFT", "RTGS", "IMPS"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q125",
+    "query": "Does the bank offer foreign exchange services and under what regulations?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p90", "comprehensive_deposit_policy_p91"],
+    "expected_keywords": ["foreign exchange", "FEMA", "Foreign Exchange Management Act", "select branches"],
+    "is_relevant": true,
+    "category": "foreign_exchange"
+  },
+  {
+    "id": "q126",
+    "query": "What happens to eHDFCL deposits after the bank merger?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p34"],
+    "expected_keywords": ["eHDFCL", "merger", "T&C", "maturity", "renewal", "governed"],
+    "is_relevant": true,
+    "category": "policy"
+  },
+  {
+    "id": "q127",
+    "query": "Can I split a joint term deposit when closing it after the death of a holder without penalty?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p76"],
+    "expected_keywords": ["splitting", "term deposit", "claimant", "deceased", "no penalty", "aggregate amount"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q128",
+    "query": "Are interest rates negotiable between depositors and the bank?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p113"],
+    "expected_keywords": ["rates cannot be negotiated", "depositors", "bank"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q129",
+    "query": "What does the bank do to help locate holders of unclaimed accounts?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p45"],
+    "expected_keywords": ["unclaimed", "inoperative", "bank website", "UDGAM Portal", "pro-active"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q130",
+    "query": "Does the savings bank interest get calculated on daily balance or monthly balance?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p48", "comprehensive_deposit_policy_p49"],
+    "expected_keywords": ["daily balances", "savings bank interest", "quarterly intervals", "calculated"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q131",
+    "query": "Can I get monthly interest payouts on a term deposit?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p52", "comprehensive_deposit_policy_p57", "comprehensive_deposit_policy_p58"],
+    "expected_keywords": ["monthly", "interest pay-out", "6 months tenor", "discounted value", "quarterly"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q132",
+    "query": "What types of entities are on Schedule I permitted to have savings accounts?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p148", "comprehensive_deposit_policy_p149", "comprehensive_deposit_policy_p150", "comprehensive_deposit_policy_p151"],
+    "expected_keywords": ["schedule I", "co-operative credit society", "Khadi", "Village Industries", "SHG", "DWCRA"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q133",
+    "query": "What is the process for accepting soiled notes from non-customers?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p88", "comprehensive_deposit_policy_p89"],
+    "expected_keywords": ["soiled notes", "non-customers", "exchange", "RBI note refund rules", "mutilated"],
+    "is_relevant": true,
+    "category": "cash_services"
+  },
+  {
+    "id": "q134",
+    "query": "What regulatory body governs the rights of depositors in India?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p3"],
+    "expected_keywords": ["Reserve Bank of India", "Banking Regulation Act 1949", "depositors", "regulatory framework"],
+    "is_relevant": true,
+    "category": "policy"
+  },
+  {
+    "id": "q135",
+    "query": "Can a bank staff member who is also a senior citizen get both rate benefits on deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p51"],
+    "expected_keywords": ["retired staff", "dual benefits", "staff rate", "senior citizen rate", "5 crores"],
+    "is_relevant": true,
+    "category": "interest_payments"
+  },
+  {
+    "id": "q136",
+    "query": "What is the bank's obligation regarding PMLA and Darpan registration for non-profits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p7"],
+    "expected_keywords": ["PMLA", "Darpan registration", "non-profit organisations", "Prevention of Money Laundering Act"],
+    "is_relevant": true,
+    "category": "policy"
+  },
+  {
+    "id": "q137",
+    "query": "Is interest paid on NRE/NRO current accounts?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p105"],
+    "expected_keywords": ["NRE", "NRO", "current account", "no interest"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q138",
+    "query": "Can FCNR deposits have recurring deposit arrangements?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p124"],
+    "expected_keywords": ["recurring deposits", "FCNR", "not accepted", "scheme"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q139",
+    "query": "What is the UDGAM portal?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p45"],
+    "expected_keywords": ["UDGAM Portal", "RBI", "unclaimed deposits", "inoperative accounts"],
+    "is_relevant": true,
+    "category": "unclaimed_deposits"
+  },
+  {
+    "id": "q140",
+    "query": "Does the bank use FBIL reference rates for FCNR deposit pricing?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p128"],
+    "expected_keywords": ["FBIL", "Financial Benchmarks India", "Overnight Alternative Reference Rate", "FCNR", "reference"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q141",
+    "query": "miner account benifits and can they oprate independntly",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p20", "comprehensive_deposit_policy_p22"],
+    "expected_keywords": ["minor", "10 years", "independently", "guardian"],
+    "is_relevant": true,
+    "category": "typo_queries"
+  },
+  {
+    "id": "q142",
+    "query": "wat happens to my deposite after 10 years no activity",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p41", "comprehensive_deposit_policy_p42"],
+    "expected_keywords": ["unclaimed", "ten years", "DEAF", "inoperative"],
+    "is_relevant": true,
+    "category": "typo_queries"
+  },
+  {
+    "id": "q143",
+    "query": "can i withdaw fd before matrity date with penality",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p58", "comprehensive_deposit_policy_p61"],
+    "expected_keywords": ["premature withdrawal", "term deposit", "penalty", "before maturity"],
+    "is_relevant": true,
+    "category": "typo_queries"
+  },
+  {
+    "id": "q144",
+    "query": "nominashon for locker how to do it",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p35", "comprehensive_deposit_policy_p92"],
+    "expected_keywords": ["nomination", "lockers", "individual", "joint"],
+    "is_relevant": true,
+    "category": "typo_queries"
+  },
+  {
+    "id": "q145",
+    "query": "how much is dicgc cover for my bank deposite",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p102"],
+    "expected_keywords": ["DICGC", "5 lakhs", "Rs.5,00,000", "insured"],
+    "is_relevant": true,
+    "category": "typo_queries"
+  },
+  {
+    "id": "q146",
+    "query": "What is the process for premature withdrawal of an NRE deposit to convert it to FCNR and is there a penalty?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p119", "comprehensive_deposit_policy_p120"],
+    "expected_keywords": ["NRE", "FCNR", "premature withdrawal", "no penalty", "conversion"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q147",
+    "query": "If a joint account has an 'Anyone or Survivor' mandate and two of three holders die, who gets the balance?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p31"],
+    "expected_keywords": ["anyone or survivor", "joint account", "death", "two account holders", "survivor"],
+    "is_relevant": true,
+    "category": "joint_accounts"
+  },
+  {
+    "id": "q148",
+    "query": "I have both a term deposit and a savings account — is my total coverage by DICGC Rs 5 lakh for each or combined?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p102"],
+    "expected_keywords": ["DICGC", "same right", "same capacity", "maximum", "5,00,000"],
+    "is_relevant": true,
+    "category": "deposit_insurance"
+  },
+  {
+    "id": "q149",
+    "query": "My account has been dormant for 18 months. Will I be notified before it becomes inoperative and can I still make debit transactions?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p40", "comprehensive_deposit_policy_p41"],
+    "expected_keywords": ["dormant", "2 years", "SMS", "email", "debit transactions", "KYC"],
+    "is_relevant": true,
+    "category": "dormant_accounts"
+  },
+  {
+    "id": "q150",
+    "query": "I am an NRI returning to India permanently. Can I keep my FCNR deposit until maturity and what happens after that?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p134", "comprehensive_deposit_policy_p135"],
+    "expected_keywords": ["FCNR", "permanent settlement", "maturity", "RFC account", "resident rupee deposit"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q151",
+    "query": "Can I open an account for my 8-year-old child independently without a guardian?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p20", "comprehensive_deposit_policy_p22"],
+    "expected_keywords": ["minor", "10 years", "guardian", "independently", "natural guardian"],
+    "is_relevant": true,
+    "category": "minor_accounts"
+  },
+  {
+    "id": "q152",
+    "query": "If I die before my FD matures and my nominee claims it after maturity, what interest will be paid?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p79", "comprehensive_deposit_policy_p80"],
+    "expected_keywords": ["deceased", "before maturity", "claimed after maturity", "contracted rate", "savings interest"],
+    "is_relevant": true,
+    "category": "deceased_accounts"
+  },
+  {
+    "id": "q153",
+    "query": "Is there a penalty if I prematurely withdraw a term deposit that hasn't completed 7 days?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p62"],
+    "expected_keywords": ["7 days", "minimum tenor", "zero interest", "premature withdrawal"],
+    "is_relevant": true,
+    "category": "term_deposits"
+  },
+  {
+    "id": "q154",
+    "query": "What is the difference between demand deposits and term deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p8", "comprehensive_deposit_policy_p11"],
+    "expected_keywords": ["demand deposits", "withdrawable on demand", "term deposits", "fixed period"],
+    "is_relevant": true,
+    "category": "account_types"
+  },
+  {
+    "id": "q155",
+    "query": "Does the bank accept deposits from Self-Help Groups?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p151"],
+    "expected_keywords": ["self-help groups", "SHGs", "savings habits", "registered or unregistered"],
+    "is_relevant": true,
+    "category": "account_opening"
+  },
+  {
+    "id": "q156",
+    "query": "What governs Government and Institutional customer accounts beyond this policy?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p6", "comprehensive_deposit_policy_p7"],
+    "expected_keywords": ["FCRA", "CGA", "PMLA", "RBI Master Direction", "co-operative societies"],
+    "is_relevant": true,
+    "category": "policy"
+  },
+  {
+    "id": "q157",
+    "query": "How is interest rounded off for FCNR(B) deposits?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p57", "comprehensive_deposit_policy_p114"],
+    "expected_keywords": ["FCNR", "two decimal places", "rounded off", "rupee deposits", "nearest rupee"],
+    "is_relevant": true,
+    "category": "nri_accounts"
+  },
+  {
+    "id": "q158",
+    "query": "Can the bank open a savings account for a political party?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p143", "comprehensive_deposit_policy_p144", "comprehensive_deposit_policy_p145"],
+    "expected_keywords": ["political party", "savings deposit account", "prohibited", "Election Commission"],
+    "is_relevant": true,
+    "category": "banking_prohibitions"
+  },
+  {
+    "id": "q159",
+    "query": "Can I invest in mutual funds through the bank's NACH direct debit facility?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p88"],
+    "expected_keywords": ["NACH", "direct debit", "mutual funds", "periodic payments"],
+    "is_relevant": true,
+    "category": "digital_banking"
+  },
+  {
+    "id": "q160",
+    "query": "Who decides whether to pay commission to agents for door-to-door deposit collection?",
+    "expected_parent_ids": ["comprehensive_deposit_policy_p137"],
+    "expected_keywords": ["commission", "agents", "door-to-door deposits", "special scheme", "DSA"],
+    "is_relevant": true,
+    "category": "banking_prohibitions"
+  },
+  {
+    "id": "q161",
+    "query": "what is the best cryptocurrency to invest in right now",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q162",
+    "query": "how do I get a home loan from the bank",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q163",
+    "query": "what are the best mutual funds to invest in for 2025",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q164",
+    "query": "how to file income tax return in India",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q165",
+    "query": "what is the current stock market index today",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q166",
+    "query": "how to get a credit card with cashback rewards",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q167",
+    "query": "what is the procedure to apply for a passport in India",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q168",
+    "query": "explain the difference between term life insurance and whole life insurance",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q169",
+    "query": "how to open a demat account for stock trading",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  },
+  {
+    "id": "q170",
+    "query": "what is the current RBI repo rate",
+    "expected_parent_ids": [],
+    "expected_keywords": [],
+    "is_relevant": false,
+    "category": "out_of_scope"
+  }
+]

@@ -4,7 +4,7 @@ from app.graph.graph import build_graph
 from app.graph.state import Intent
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def compiled_graph():
     return build_graph()
 

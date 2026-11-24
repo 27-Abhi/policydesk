@@ -1,0 +1,2104 @@
+{
+  "metrics": {
+    "total_queries": 170,
+    "in_domain_queries": 160,
+    "out_of_scope_queries": 10,
+    "hit_rate_at_1": 94.38,
+    "hit_rate_at_3": 98.75,
+    "mean_reciprocal_rank": 0.9646,
+    "gating_sensitivity_tpr": 100.0,
+    "gating_specificity_tnr": 100.0,
+    "overall_gating_accuracy": 100.0,
+    "avg_in_domain_cosine_score": 0.6637,
+    "avg_out_of_scope_cosine_score": 0.0847,
+    "relevance_threshold": 0.15
+  },
+  "details": [
+    {
+      "id": "q001",
+      "query": "What types of deposit accounts does the bank offer?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p8",
+        "comprehensive_deposit_policy_p9",
+        "comprehensive_deposit_policy_p10",
+        "comprehensive_deposit_policy_p11"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7978,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q002",
+      "query": "What is a Basic Savings Bank Deposit Account and what are its features?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p28"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8269,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q003",
+      "query": "What is the minimum deposit amount for a bulk term deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p28"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6754,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q004",
+      "query": "Can a current account earn interest?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p10",
+        "comprehensive_deposit_policy_p49"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4912,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q005",
+      "query": "Who can open a savings bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p16",
+        "comprehensive_deposit_policy_p20"
+      ],
+      "found_rank": 1,
+      "top_score": 0.716,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q006",
+      "query": "What KYC documents are required to open a bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p12",
+        "comprehensive_deposit_policy_p19"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5214,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q007",
+      "query": "Can I open a bank account online or do I need to visit the branch?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p13"
+      ],
+      "found_rank": null,
+      "top_score": 0.2597,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q008",
+      "query": "What entities are eligible to open a current account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p17"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3661,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q009",
+      "query": "What happens if I fail to maintain the minimum balance in my savings account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p14",
+        "comprehensive_deposit_policy_p97",
+        "comprehensive_deposit_policy_p98"
+      ],
+      "found_rank": 1,
+      "top_score": 0.9716,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q010",
+      "query": "How far in advance will the bank notify me before changing service fees?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p97"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6607,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q011",
+      "query": "Can the bank make my account balance go negative by charging AMB fees?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p99"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6076,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q012",
+      "query": "Can a minor open a bank account independently?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p20",
+        "comprehensive_deposit_policy_p22"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8473,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q013",
+      "query": "What account types can a minor open?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p21",
+        "comprehensive_deposit_policy_p22"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4818,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q014",
+      "query": "Can a minor get an overdraft on their account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p22"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3064,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q015",
+      "query": "What happens to a minor's account when they turn 18?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p22"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6142,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q016",
+      "query": "Can an illiterate person open a bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p23",
+        "comprehensive_deposit_policy_p24"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6444,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q017",
+      "query": "Does the bank provide cheque book facility to illiterate customers?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p23"
+      ],
+      "found_rank": 1,
+      "top_score": 1.0383,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q018",
+      "query": "Are visually impaired customers given ATM and debit card facilities?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p25"
+      ],
+      "found_rank": 1,
+      "top_score": 1.2094,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q019",
+      "query": "How can a person with autism or cerebral palsy open a bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p26"
+      ],
+      "found_rank": 1,
+      "top_score": 1.0785,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q020",
+      "query": "How does the bank treat transgender customers?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p27"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4296,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q021",
+      "query": "Does the bank offer any special accounts for pensioners?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p27"
+      ],
+      "found_rank": 1,
+      "top_score": 0.9003,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q022",
+      "query": "What is the FCRA savings account and who needs it?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p17",
+        "comprehensive_deposit_policy_p18"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8536,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q023",
+      "query": "How does the Either or Survivor mandate work in a joint account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p30"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7816,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q024",
+      "query": "What is the Former or Survivor mandate in a joint deposit account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p31"
+      ],
+      "found_rank": 1,
+      "top_score": 1.131,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q025",
+      "query": "Can joint account operation mandate be changed after the account is opened?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p29"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5767,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q026",
+      "query": "Can I give power of attorney to someone to operate my account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p32"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6447,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q027",
+      "query": "Can I add or remove a joint account holder from my account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p37",
+        "comprehensive_deposit_policy_p38"
+      ],
+      "found_rank": 1,
+      "top_score": 0.706,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q028",
+      "query": "Can the first holder be removed from a joint account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p37"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5492,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q029",
+      "query": "What happens to a joint fixed deposit if one of the holders dies?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p32",
+        "comprehensive_deposit_policy_p72",
+        "comprehensive_deposit_policy_p73"
+      ],
+      "found_rank": 1,
+      "top_score": 0.607,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q030",
+      "query": "How does the nomination facility work for bank accounts?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p34",
+        "comprehensive_deposit_policy_p35"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5342,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q031",
+      "query": "Can I nominate more than one person for my bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p36"
+      ],
+      "found_rank": 2,
+      "top_score": 0.4025,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q032",
+      "query": "Can I nominate a minor as the nominee for my bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p36"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4463,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q033",
+      "query": "Can a member of the LGBTQ community be added as a nominee?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p36"
+      ],
+      "found_rank": 1,
+      "top_score": 0.659,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q034",
+      "query": "Can I change or cancel a nomination after it has been made?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p36"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7979,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q035",
+      "query": "Is nomination available on safe deposit lockers?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p35",
+        "comprehensive_deposit_policy_p92"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8139,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q036",
+      "query": "When does a savings account become inoperative or dormant?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p40"
+      ],
+      "found_rank": 1,
+      "top_score": 0.981,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q037",
+      "query": "Will I be notified before my account becomes dormant?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p40"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6239,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q038",
+      "query": "Can I make debit transactions from a dormant account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p41"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6744,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q039",
+      "query": "What happens to unclaimed deposits after ten years?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p41",
+        "comprehensive_deposit_policy_p42"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6678,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q040",
+      "query": "What is the DEAF scheme and how does it apply to unclaimed deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p42",
+        "comprehensive_deposit_policy_p43"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6295,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q041",
+      "query": "Can I still claim my money after it has been transferred to the DEAF fund?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p43",
+        "comprehensive_deposit_policy_p44"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4529,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q042",
+      "query": "What interest is paid on an unclaimed term deposit before transfer to DEAF?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p44"
+      ],
+      "found_rank": 1,
+      "top_score": 0.9375,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q043",
+      "query": "How can I find out if I have an unclaimed deposit with the bank?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p45"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6897,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q044",
+      "query": "Can I transfer my savings account to another branch?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p47"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4242,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q045",
+      "query": "Is passbook facility available for non-individual savings account holders?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p46"
+      ],
+      "found_rank": 1,
+      "top_score": 1.6567,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q046",
+      "query": "Who decides the interest rates on deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p47",
+        "comprehensive_deposit_policy_p48"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6548,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q047",
+      "query": "How is interest calculated on savings bank accounts?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p48",
+        "comprehensive_deposit_policy_p49"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6612,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q048",
+      "query": "Do savings accounts above one lakh rupees get a different interest rate?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p48",
+        "comprehensive_deposit_policy_p49"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7007,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q049",
+      "query": "Do senior citizens get additional interest on term deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p50"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7942,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q050",
+      "query": "Do bank staff get better interest rates on deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p51"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4746,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q051",
+      "query": "Does an HUF where the karta is a senior citizen get senior citizen interest rates?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p52"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8238,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q052",
+      "query": "How is interest calculated on term deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p52",
+        "comprehensive_deposit_policy_p53"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6341,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q053",
+      "query": "How does the bank calculate interest in a leap year?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p54"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7662,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q054",
+      "query": "Are interest rates the same across all branches?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p54",
+        "comprehensive_deposit_policy_p55"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8415,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q055",
+      "query": "Can the bank refuse to accept multiple deposits split from a larger amount?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p55"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6099,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q056",
+      "query": "Are bulk deposit interest rates displayed on the bank website?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p57"
+      ],
+      "found_rank": 1,
+      "top_score": 0.776,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q057",
+      "query": "What is the minimum tenor for a reinvestment or interest payout deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p57"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4688,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q058",
+      "query": "Can I withdraw my term deposit before maturity?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p58",
+        "comprehensive_deposit_policy_p59"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4727,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q059",
+      "query": "Are term deposits below 1 crore required to have a premature withdrawal option?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p59"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7411,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q060",
+      "query": "What are the options for term deposits of 2 crore and above regarding premature withdrawal?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p60"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6569,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q061",
+      "query": "Is there a penalty for premature withdrawal of a term deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p61"
+      ],
+      "found_rank": 1,
+      "top_score": 1.0256,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q062",
+      "query": "What is the minimum period a term deposit must run to earn any interest?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p62"
+      ],
+      "found_rank": 1,
+      "top_score": 1.1141,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q063",
+      "query": "What happens to a term deposit if no maturity instructions are given?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p33",
+        "comprehensive_deposit_policy_p64",
+        "comprehensive_deposit_policy_p65"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4992,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q064",
+      "query": "Which types of deposits are not auto-renewed on maturity?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p65"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5337,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q065",
+      "query": "For a cumulative fixed deposit, what gets renewed on maturity?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p66"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8912,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q066",
+      "query": "Can I get a loan against my term deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p66"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4458,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q067",
+      "query": "Can I get a loan against a tax saver or recurring deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p67"
+      ],
+      "found_rank": 1,
+      "top_score": 0.648,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q068",
+      "query": "When does the bank deduct TDS on fixed deposit interest?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p67"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5725,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q069",
+      "query": "How can I avoid TDS deduction on my fixed deposit interest?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p67",
+        "comprehensive_deposit_policy_p68"
+      ],
+      "found_rank": 3,
+      "top_score": 0.4831,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q070",
+      "query": "What happens to Form 15G submission if my account is inoperative?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p68"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4983,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q071",
+      "query": "How is the balance paid out when a single account holder dies?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p70",
+        "comprehensive_deposit_policy_p71"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4706,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q072",
+      "query": "What happens to a joint account when one account holder dies?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p72",
+        "comprehensive_deposit_policy_p73"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6008,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q073",
+      "query": "How is the balance of a deceased person's account paid without nomination and no disputes?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p74"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7774,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q074",
+      "query": "Is there a penalty for prematurely closing a term deposit due to the death of the primary holder?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p75"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6726,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q075",
+      "query": "What interest rate is paid on a current account after the account holder dies?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p77"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4939,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q076",
+      "query": "How long does it take before a missing person can be presumed dead for settling bank claims?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p78"
+      ],
+      "found_rank": 2,
+      "top_score": 0.6284,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q077",
+      "query": "What interest is paid on a deceased depositor's term deposit after its maturity date?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p79",
+        "comprehensive_deposit_policy_p80"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8921,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q078",
+      "query": "Is TDS deducted on interest paid to the nominee of a deceased depositor?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p81"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6479,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q079",
+      "query": "What banking channels are available for electronic transactions?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p83"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5808,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q080",
+      "query": "What mobile number requirements are there for opening a bank account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p82"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6557,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q081",
+      "query": "Can I give standing instructions for recurring fund transfers?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p87"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6855,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q082",
+      "query": "What is NACH and how is it used?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p87",
+        "comprehensive_deposit_policy_p88"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3537,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q083",
+      "query": "How do I stop a cheque I have already issued?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p88"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4615,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q084",
+      "query": "Can I exchange soiled or damaged currency notes at the bank?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p88",
+        "comprehensive_deposit_policy_p89"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6494,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q085",
+      "query": "How do I report a lost or stolen debit card?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p90"
+      ],
+      "found_rank": 1,
+      "top_score": 0.382,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q086",
+      "query": "Can a minor hire a safe deposit locker?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p92"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8866,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q087",
+      "query": "Who is eligible to hire a safe deposit locker at the bank?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p91",
+        "comprehensive_deposit_policy_p92"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6186,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q088",
+      "query": "What happens to the contents of a locker when the locker holder dies and there is no nomination?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p93",
+        "comprehensive_deposit_policy_p94"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3941,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q089",
+      "query": "Can joint locker holders give a mandate for access if one holder dies?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p93"
+      ],
+      "found_rank": 1,
+      "top_score": 1.3085,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q090",
+      "query": "What is the maximum deposit insurance coverage per depositor?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p102"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6639,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q091",
+      "query": "What types of deposits are covered under DICGC insurance?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p101",
+        "comprehensive_deposit_policy_p102"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7734,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q092",
+      "query": "Can the bank share my account information with third parties?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p100"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4112,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q093",
+      "query": "Can the bank use my personal information for cross-selling products?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p99"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6097,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q094",
+      "query": "What do I do if I am unsatisfied with the bank's response to my complaint?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p103",
+        "comprehensive_deposit_policy_p104"
+      ],
+      "found_rank": 1,
+      "top_score": 0.674,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q095",
+      "query": "Where can I find the bank's complaint redressal details?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p103"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4491,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q096",
+      "query": "What are the interest rates on NRE and NRO savings accounts?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p104",
+        "comprehensive_deposit_policy_p105"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7585,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q097",
+      "query": "What is the minimum tenure for an NRE term deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p106"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5971,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q098",
+      "query": "Do NRE or NRO deposits offer senior citizen or staff interest rate benefits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p107"
+      ],
+      "found_rank": 1,
+      "top_score": 1.0392,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q099",
+      "query": "Is there a penalty for premature withdrawal of NRE or FCNR deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p119",
+        "comprehensive_deposit_policy_p120"
+      ],
+      "found_rank": 1,
+      "top_score": 1.3428,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q100",
+      "query": "Can I get an overdraft against my NRO deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p111"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5299,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q101",
+      "query": "Can I get an overdraft against RFC deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p121"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5601,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q102",
+      "query": "What is the maximum tenure for an RFC deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p120"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7412,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q103",
+      "query": "Can I convert my NRE deposit to an RFC deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p121",
+        "comprehensive_deposit_policy_p122"
+      ],
+      "found_rank": 1,
+      "top_score": 0.9125,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q104",
+      "query": "Can the bank mark a lien against my NRE savings deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p122"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7248,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q105",
+      "query": "How is interest calculated on FCNR deposits for foreign currency?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p109"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6607,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q106",
+      "query": "Does the bank issue TDS certificates for NRO deposit interest?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p110"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7193,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q107",
+      "query": "What are the maturity tenors available for FCNR(B) deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p124"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4326,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q108",
+      "query": "Can FCNR deposits be renewed for more than five years?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p124"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8934,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q109",
+      "query": "Does the bank offer floating interest rates on FCNR deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p125"
+      ],
+      "found_rank": 1,
+      "top_score": 1.0932,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q110",
+      "query": "What is the interest rate ceiling for FCNR deposits with a 4-year tenure?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p127"
+      ],
+      "found_rank": 1,
+      "top_score": 0.9368,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q111",
+      "query": "How is the renewal interest rate decided for FCNR deposits renewed within 14 days of maturity?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p129"
+      ],
+      "found_rank": 1,
+      "top_score": 0.944,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q112",
+      "query": "What interest is paid on an FCNR deposit if the holder dies before maturity?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p130",
+        "comprehensive_deposit_policy_p131"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4841,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q113",
+      "query": "What happens to an FCNR deposit when the NRI account holder returns to India permanently?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p134",
+        "comprehensive_deposit_policy_p135"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8938,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q114",
+      "query": "What happens to a deceased NRI's NRE term deposit if the claimants are residents?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p123"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7227,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q115",
+      "query": "What is the bank's policy if a deposit matures on a non-business day?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p115"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7791,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q116",
+      "query": "Can the bank give advances against term deposits of another bank?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p142"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5106,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q117",
+      "query": "What is the maximum gift value the bank can give to depositors when accepting deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p139"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4677,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q118",
+      "query": "Can the bank offer lotteries or prize schemes to attract deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p138"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4323,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q119",
+      "query": "Can the bank advertise only the compound interest rate without showing the simple interest rate?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p140",
+        "comprehensive_deposit_policy_p141"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5683,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q120",
+      "query": "Is BSBDA the same as a regular savings account?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p28"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5055,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q121",
+      "query": "Can a co-operative society open a savings account with the bank?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p148"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8531,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q122",
+      "query": "Does the bank review its deposit policy regularly?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p136"
+      ],
+      "found_rank": 2,
+      "top_score": 0.3261,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q123",
+      "query": "What is the bank's FARSight dashboard?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p85"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6424,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q124",
+      "query": "What collection modes does CollectNow support?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p86"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5991,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q125",
+      "query": "Does the bank offer foreign exchange services and under what regulations?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p90",
+        "comprehensive_deposit_policy_p91"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8967,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q126",
+      "query": "What happens to eHDFCL deposits after the bank merger?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p34"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5758,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q127",
+      "query": "Can I split a joint term deposit when closing it after the death of a holder without penalty?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p76"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5969,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q128",
+      "query": "Are interest rates negotiable between depositors and the bank?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p113"
+      ],
+      "found_rank": 1,
+      "top_score": 0.9723,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q129",
+      "query": "What does the bank do to help locate holders of unclaimed accounts?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p45"
+      ],
+      "found_rank": 1,
+      "top_score": 0.455,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q130",
+      "query": "Does the savings bank interest get calculated on daily balance or monthly balance?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p48",
+        "comprehensive_deposit_policy_p49"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8104,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q131",
+      "query": "Can I get monthly interest payouts on a term deposit?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p52",
+        "comprehensive_deposit_policy_p57",
+        "comprehensive_deposit_policy_p58"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3128,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q132",
+      "query": "What types of entities are on Schedule I permitted to have savings accounts?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p148",
+        "comprehensive_deposit_policy_p149",
+        "comprehensive_deposit_policy_p150",
+        "comprehensive_deposit_policy_p151"
+      ],
+      "found_rank": null,
+      "top_score": 0.51,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q133",
+      "query": "What is the process for accepting soiled notes from non-customers?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p88",
+        "comprehensive_deposit_policy_p89"
+      ],
+      "found_rank": 1,
+      "top_score": 0.835,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q134",
+      "query": "What regulatory body governs the rights of depositors in India?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p3"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5787,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q135",
+      "query": "Can a bank staff member who is also a senior citizen get both rate benefits on deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p51"
+      ],
+      "found_rank": 2,
+      "top_score": 0.665,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q136",
+      "query": "What is the bank's obligation regarding PMLA and Darpan registration for non-profits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p7"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7168,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q137",
+      "query": "Is interest paid on NRE/NRO current accounts?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p105"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7264,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q138",
+      "query": "Can FCNR deposits have recurring deposit arrangements?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p124"
+      ],
+      "found_rank": 1,
+      "top_score": 0.564,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q139",
+      "query": "What is the UDGAM portal?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p45"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6555,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q140",
+      "query": "Does the bank use FBIL reference rates for FCNR deposit pricing?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p128"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6522,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q141",
+      "query": "miner account benifits and can they oprate independntly",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p20",
+        "comprehensive_deposit_policy_p22"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5258,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q142",
+      "query": "wat happens to my deposite after 10 years no activity",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p41",
+        "comprehensive_deposit_policy_p42"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3508,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q143",
+      "query": "can i withdaw fd before matrity date with penality",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p58",
+        "comprehensive_deposit_policy_p61"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3554,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q144",
+      "query": "nominashon for locker how to do it",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p35",
+        "comprehensive_deposit_policy_p92"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5294,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q145",
+      "query": "how much is dicgc cover for my bank deposite",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p102"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6035,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q146",
+      "query": "What is the process for premature withdrawal of an NRE deposit to convert it to FCNR and is there a penalty?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p119",
+        "comprehensive_deposit_policy_p120"
+      ],
+      "found_rank": 1,
+      "top_score": 0.885,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q147",
+      "query": "If a joint account has an 'Anyone or Survivor' mandate and two of three holders die, who gets the balance?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p31"
+      ],
+      "found_rank": 1,
+      "top_score": 0.6863,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q148",
+      "query": "I have both a term deposit and a savings account \u2014 is my total coverage by DICGC Rs 5 lakh for each or combined?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p102"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3648,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q149",
+      "query": "My account has been dormant for 18 months. Will I be notified before it becomes inoperative and can I still make debit transactions?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p40",
+        "comprehensive_deposit_policy_p41"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4766,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q150",
+      "query": "I am an NRI returning to India permanently. Can I keep my FCNR deposit until maturity and what happens after that?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p134",
+        "comprehensive_deposit_policy_p135"
+      ],
+      "found_rank": 1,
+      "top_score": 0.8882,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q151",
+      "query": "Can I open an account for my 8-year-old child independently without a guardian?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p20",
+        "comprehensive_deposit_policy_p22"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3536,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q152",
+      "query": "If I die before my FD matures and my nominee claims it after maturity, what interest will be paid?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p79",
+        "comprehensive_deposit_policy_p80"
+      ],
+      "found_rank": 1,
+      "top_score": 0.4341,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q153",
+      "query": "Is there a penalty if I prematurely withdraw a term deposit that hasn't completed 7 days?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p62"
+      ],
+      "found_rank": 1,
+      "top_score": 0.3194,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q154",
+      "query": "What is the difference between demand deposits and term deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p8",
+        "comprehensive_deposit_policy_p11"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5386,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q155",
+      "query": "Does the bank accept deposits from Self-Help Groups?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p151"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7051,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q156",
+      "query": "What governs Government and Institutional customer accounts beyond this policy?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p6",
+        "comprehensive_deposit_policy_p7"
+      ],
+      "found_rank": 2,
+      "top_score": 0.4448,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q157",
+      "query": "How is interest rounded off for FCNR(B) deposits?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p57",
+        "comprehensive_deposit_policy_p114"
+      ],
+      "found_rank": 1,
+      "top_score": 0.7223,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q158",
+      "query": "Can the bank open a savings account for a political party?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p143",
+        "comprehensive_deposit_policy_p144",
+        "comprehensive_deposit_policy_p145"
+      ],
+      "found_rank": 2,
+      "top_score": 0.4209,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "FLAG"
+    },
+    {
+      "id": "q159",
+      "query": "Can I invest in mutual funds through the bank's NACH direct debit facility?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p88"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5818,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q160",
+      "query": "Who decides whether to pay commission to agents for door-to-door deposit collection?",
+      "expected_parent_ids": [
+        "comprehensive_deposit_policy_p137"
+      ],
+      "found_rank": 1,
+      "top_score": 0.5955,
+      "is_relevant_expected": true,
+      "is_relevant_gated": true,
+      "status": "PASS"
+    },
+    {
+      "id": "q161",
+      "query": "what is the best cryptocurrency to invest in right now",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0741,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q162",
+      "query": "how do I get a home loan from the bank",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.1006,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q163",
+      "query": "what are the best mutual funds to invest in for 2025",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0697,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q164",
+      "query": "how to file income tax return in India",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.1321,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q165",
+      "query": "what is the current stock market index today",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0784,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q166",
+      "query": "how to get a credit card with cashback rewards",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0931,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q167",
+      "query": "what is the procedure to apply for a passport in India",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0839,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q168",
+      "query": "explain the difference between term life insurance and whole life insurance",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0949,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q169",
+      "query": "how to open a demat account for stock trading",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0724,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    },
+    {
+      "id": "q170",
+      "query": "what is the current RBI repo rate",
+      "expected_parent_ids": [],
+      "found_rank": null,
+      "top_score": 0.0482,
+      "is_relevant_expected": false,
+      "is_relevant_gated": false,
+      "status": "PASS"
+    }
+  ]
+}

@@ -9,4 +9,10 @@ __pycache__/
 !.env.example
 .vibe-wise/
 .agents/
-
+.deepeval/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+app/static/data/
+scratch/

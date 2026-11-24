@@ -34,7 +34,7 @@
       <button onclick="fetchAllData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg transition border border-slate-700 flex items-center gap-1.5">
         <i class="fa-solid fa-arrows-rotate"></i> Refresh
       </button>
-      <a href="http://localhost:8000" target="_blank" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+      <a id="customer-app-link" href="http://localhost:8000" target="_blank" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
         <i class="fa-solid fa-arrow-up-right-from-square"></i> Customer App (8000)
       </a>
     </div>
@@ -111,7 +111,7 @@
 
       <div id="rag-debug-result" class="hidden space-y-4">
         <!-- Metrics Bar -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
           <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
             <span class="text-xs text-slate-400 block">Classified Intent</span>
             <span id="metric-intent" class="text-sm font-semibold text-indigo-400">--</span>
@@ -121,12 +121,20 @@
             <span id="metric-score" class="text-sm font-semibold text-emerald-400">--</span>
           </div>
           <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
-            <span class="text-xs text-slate-400 block">Relevance Threshold</span>
-            <span class="text-sm font-semibold text-slate-300">0.1500 (Passed)</span>
+            <span class="text-xs text-slate-400 block">CRAG Retries / Rewritten</span>
+            <span id="metric-crag" class="text-sm font-semibold text-amber-400">--</span>
+          </div>
+          <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-xs text-slate-400 block">Grounding Check</span>
+            <span id="metric-grounded" class="text-sm font-semibold text-emerald-300">--</span>
           </div>
           <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
             <span class="text-xs text-slate-400 block">Retrieved Parent Chunks</span>
             <span id="metric-chunks-count" class="text-sm font-semibold text-cyan-400">--</span>
+          </div>
+          <div class="bg-slate-800/70 border border-slate-700/60 rounded-xl p-3">
+            <span class="text-xs text-slate-400 block">Pipeline Latency</span>
+            <span id="metric-latency" class="text-sm font-semibold text-slate-200">--</span>
           </div>
         </div>
 
@@ -147,7 +155,31 @@
   </main>
 
   <script>
+    const customerLink = document.getElementById('customer-app-link');
+    if (customerLink) customerLink.href = `${window.location.protocol}//${window.location.hostname || 'localhost'}:8000`;
+
     let activeTab = 'disputes';
+
+    function adminHeaders(extra = {}) {
+      const headers = { ...extra };
+      const key = sessionStorage.getItem('policydesk_admin_key');
+      if (key) headers['X-Admin-Key'] = key;
+      return headers;
+    }
+
+    async function adminFetch(url, opts = {}) {
+      opts.headers = adminHeaders(opts.headers || {});
+      let resp = await fetch(url, opts);
+      if (resp.status === 401) {
+        const entered = prompt('Enter Admin API Key (ADMIN_API_KEY):');
+        if (entered) {
+          sessionStorage.setItem('policydesk_admin_key', entered.trim());
+          opts.headers = adminHeaders(opts.headers || {});
+          resp = await fetch(url, opts);
+        }
+      }
+      return resp;
+    }
 
     function switchTab(tab) {
       activeTab = tab;
@@ -169,7 +201,7 @@
 
     async function fetchDisputes() {
       try {
-        const resp = await fetch('/v1/disputes');
+        const resp = await adminFetch('/v1/disputes');
         if (!resp.ok) return;
         const data = await resp.json();
         renderDisputes(data);
@@ -180,7 +212,7 @@
 
     async function fetchEscalations() {
       try {
-        const resp = await fetch('/v1/escalations');
+        const resp = await adminFetch('/v1/escalations');
         if (!resp.ok) return;
         const data = await resp.json();
         renderEscalations(data);
@@ -321,7 +353,7 @@
       }
 
       try {
-        const resp = await fetch(`/v1/disputes/${threadId}/review`, {
+        const resp = await adminFetch(`/v1/disputes/${threadId}/review`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ approved: approved, comments: comments })
@@ -339,7 +371,7 @@
 
     async function resolveTicket(ticketId) {
       try {
-        await fetch(`/v1/escalations/${ticketId}/resolve`, { method: 'POST' });
+        await adminFetch(`/v1/escalations/${ticketId}/resolve`, { method: 'POST' });
         fetchEscalations();
       } catch (e) {
         console.error(e);
@@ -351,7 +383,7 @@
       if (!q) return;
 
       try {
-        const resp = await fetch('/v1/chat/debug', {
+        const resp = await adminFetch('/v1/chat/debug', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -365,18 +397,27 @@
 
         document.getElementById('metric-intent').innerText = data.intent || 'out_of_scope';
         document.getElementById('metric-score').innerText = (data.relevance_score || 0).toFixed(4);
+        document.getElementById('metric-crag').innerText = `${data.retrieval_attempts || 0}x${data.rewritten_query ? ' (Rewritten)' : ''}`;
+        document.getElementById('metric-grounded').innerText = data.grounded === true ? 'Verified' : (data.grounded === false ? 'Abstained/Failed' : 'N/A');
         document.getElementById('metric-chunks-count').innerText = (data.retrieved_docs || []).length;
+        const latencyMs = data.metrics && data.metrics.total_latency_ms ? `${data.metrics.total_latency_ms} ms` : '--';
+        document.getElementById('metric-latency').innerText = latencyMs;
 
         const chunksContainer = document.getElementById('chunks-container');
         if (!data.reranked_docs || data.reranked_docs.length === 0) {
           chunksContainer.innerHTML = '<span class="text-slate-500">No chunks retrieved or scored above threshold.</span>';
         } else {
-          chunksContainer.innerHTML = data.reranked_docs.map((doc, idx) => `
-            <div class="bg-slate-900/90 p-2.5 rounded border border-slate-700/60 leading-relaxed">
-              <span class="text-indigo-400 font-bold block mb-1">Rank #${idx + 1}:</span>
-              ${escapeHtml(doc)}
-            </div>
-          `).join('');
+          const cits = data.citations || [];
+          chunksContainer.innerHTML = data.reranked_docs.map((doc, idx) => {
+            const cit = cits[idx] || {};
+            const citLabel = cit.citation ? ` • ${escapeHtml(cit.citation)}` : '';
+            return `
+              <div class="bg-slate-900/90 p-2.5 rounded border border-slate-700/60 leading-relaxed">
+                <span class="text-indigo-400 font-bold block mb-1">Rank #${idx + 1}${citLabel}:</span>
+                ${escapeHtml(doc)}
+              </div>
+            `;
+          }).join('');
         }
 
         document.getElementById('rag-answer').innerText = data.answer || 'No answer synthesized.';

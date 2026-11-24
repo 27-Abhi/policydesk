@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.api.v1.router import api_v1_router
+from app.api.v1.router import customer_v1_router, get_allowed_origins
 
 customer_app = FastAPI(
     title="PolicyDesk Customer Support Portal",
@@ -17,9 +16,9 @@ customer_app = FastAPI(
 
 customer_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=get_allowed_origins(),
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -49,5 +48,5 @@ def health_check():
     return {"status": "ok", "service": "policydesk-customer-portal", "port": 8000}
 
 
-# Mount customer API routes (/v1/chat/completions)
-customer_app.include_router(api_v1_router, prefix="/v1")
+# Mount strictly customer-safe endpoints on public Port 8000
+customer_app.include_router(customer_v1_router, prefix="/v1")

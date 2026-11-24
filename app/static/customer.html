@@ -38,7 +38,7 @@
       <a href="/explainer" target="_blank" class="text-xs bg-indigo-950 hover:bg-indigo-900 text-cyan-300 font-medium px-3 py-1.5 rounded-lg border border-cyan-800 transition shadow flex items-center gap-1.5">
         <i class="fa-solid fa-film"></i> Architecture Explainer
       </a>
-      <a href="http://localhost:8001" target="_blank" class="text-xs bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+      <a id="staff-portal-link" href="http://localhost:8001" target="_blank" class="text-xs bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
         <i class="fa-solid fa-shield-halved"></i> Staff Portal (8001)
       </a>
     </div>
@@ -117,24 +117,29 @@
   </div>
 
   <script>
+    const staffBaseUrl = `${window.location.protocol}//${window.location.hostname || 'localhost'}:8001`;
+    const staffLink = document.getElementById('staff-portal-link');
+    if (staffLink) staffLink.href = staffBaseUrl;
+
     let threadId = localStorage.getItem('policydesk_thread_id') || ('session_' + Math.random().toString(36).substring(2, 12));
     localStorage.setItem('policydesk_thread_id', threadId);
     document.getElementById('session-display').innerText = 'Thread: ' + threadId;
 
-    async function checkExistingDisputeStatus() {
-      try {
-        const resp = await fetch(`/v1/disputes/${threadId}`);
-        if (!resp.ok) return;
-        const data = await resp.json();
-        if (data && data.is_pending_review) {
-          appendAssistantMessage(`Dispute case ${data.dispute_id} for transaction ${data.transaction_id} is currently submitted for compliance review.`);
-        }
-      } catch (e) {}
+    let chatHistory = [];
+
+    function restorePendingDisputeStream() {
+      const pendingKey = `policydesk_pending_dispute_${threadId}`;
+      if (localStorage.getItem(pendingKey) === '1') {
+        appendAssistantMessage('Resuming live compliance review listener for your submitted dispute...');
+        connectDisputeEventSource(threadId, 'restored-' + threadId);
+      }
     }
-    checkExistingDisputeStatus();
 
     function resetSession() {
+      Object.values(activeEventSources).forEach(es => es.close());
+      activeEventSources = {};
       threadId = 'session_' + Math.random().toString(36).substring(2, 12);
+      chatHistory = [];
       localStorage.setItem('policydesk_thread_id', threadId);
       document.getElementById('session-display').innerText = 'Thread: ' + threadId;
       const win = document.getElementById('chat-window');
@@ -175,45 +180,55 @@
       win.scrollTop = win.scrollHeight;
     }
 
-    function appendAssistantMessage(text) {
-      const win = document.getElementById('chat-window');
-      const div = document.createElement('div');
-      div.className = 'chat-bubble flex items-start gap-3';
-
+    function buildAssistantBadge(text, badgeId) {
       let isDisputePending = text.includes("submitted for compliance review");
       let isApproved = text.includes("approved by compliance");
       let isRejected = text.includes("not approved");
 
-      let badgeHtml = "";
-      let badgeId = 'badge-' + Math.random().toString(36).substring(2, 9);
       if (isDisputePending) {
-        badgeHtml = `
+        localStorage.setItem(`policydesk_pending_dispute_${threadId}`, '1');
+        connectDisputeEventSource(threadId, badgeId);
+        return `
           <div id="${badgeId}" class="mt-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-xs flex items-center justify-between">
             <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-amber-600 animate-pulse"></i> Awaiting Human Compliance Approval (Live SSE)</span>
-            <a href="http://localhost:8001" target="_blank" class="text-indigo-600 font-semibold underline hover:text-indigo-800">Review on Port 8001 &rarr;</a>
+            <a href="${staffBaseUrl}" target="_blank" class="text-indigo-600 font-semibold underline hover:text-indigo-800">Review on Port 8001 &rarr;</a>
           </div>
         `;
-        connectDisputeEventSource(threadId, badgeId);
-      } else if (isApproved) {
-        badgeHtml = `
+      }
+      if (isApproved) {
+        localStorage.removeItem(`policydesk_pending_dispute_${threadId}`);
+        return `
           <div class="mt-2.5 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs flex items-center gap-1.5">
             <i class="fa-solid fa-circle-check text-emerald-600"></i> Compliance Decision: Case Approved
           </div>
         `;
-      } else if (isRejected) {
-        badgeHtml = `
+      }
+      if (isRejected) {
+        localStorage.removeItem(`policydesk_pending_dispute_${threadId}`);
+        return `
           <div class="mt-2.5 p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs flex items-center gap-1.5">
             <i class="fa-solid fa-circle-xmark text-rose-600"></i> Compliance Decision: Case Rejected
           </div>
         `;
       }
+      return "";
+    }
 
-      // Check if 2FA prompt
+    function updateAuthHelper(text) {
       if (text.toLowerCase().includes("phone number") || text.toLowerCase().includes("verification code")) {
         document.getElementById('auth-helper').classList.remove('hidden');
       } else if (text.toLowerCase().includes("authentication successful")) {
         document.getElementById('auth-helper').classList.add('hidden');
       }
+    }
+
+    function appendAssistantMessage(text) {
+      const win = document.getElementById('chat-window');
+      const div = document.createElement('div');
+      div.className = 'chat-bubble flex items-start gap-3';
+      let badgeId = 'badge-' + Math.random().toString(36).substring(2, 9);
+      let badgeHtml = buildAssistantBadge(text, badgeId);
+      updateAuthHelper(text);
 
       div.innerHTML = `
         <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
@@ -225,7 +240,24 @@
       win.scrollTop = win.scrollHeight;
     }
 
+    function createStreamingAssistantBubble() {
+      const win = document.getElementById('chat-window');
+      const div = document.createElement('div');
+      div.className = 'chat-bubble flex items-start gap-3';
+      const bodyEl = document.createElement('div');
+      bodyEl.className = 'bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] text-slate-800 text-sm shadow-sm leading-relaxed whitespace-pre-wrap';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+      `;
+      div.appendChild(bodyEl);
+      win.appendChild(div);
+      return { div, bodyEl, win };
+    }
+
     let activeEventSources = {};
+    restorePendingDisputeStream();
 
     function connectDisputeEventSource(tid, bId) {
       if (activeEventSources[tid]) {
@@ -315,6 +347,9 @@
       sendBtn.disabled = true;
       appendLoadingBubble();
 
+      chatHistory.push({ role: 'user', content: text });
+      if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
       try {
         const resp = await fetch('/v1/chat/completions', {
           method: 'POST',
@@ -324,8 +359,8 @@
           },
           body: JSON.stringify({
             model: 'policydesk',
-            messages: [{ role: 'user', content: text }],
-            stream: false
+            messages: chatHistory,
+            stream: true
           })
         });
 
@@ -337,9 +372,51 @@
           return;
         }
 
-        const data = await resp.json();
-        const content = data.choices && data.choices[0] ? data.choices[0].message.content : 'No answer generated.';
-        appendAssistantMessage(content);
+        const ctype = resp.headers.get('content-type') || '';
+        if (!ctype.includes('text/event-stream') || !resp.body) {
+          const data = await resp.json();
+          const content = data.choices && data.choices[0] ? data.choices[0].message.content : 'No answer generated.';
+          chatHistory.push({ role: 'assistant', content });
+          appendAssistantMessage(content);
+          return;
+        }
+
+        const { bodyEl, win } = createStreamingAssistantBubble();
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let fullText = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const payload = line.slice(6).trim();
+            if (payload === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(payload);
+              const delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta ? parsed.choices[0].delta.content : '';
+              if (delta) {
+                fullText += delta;
+                bodyEl.textContent = fullText;
+                win.scrollTop = win.scrollHeight;
+              }
+            } catch (_) {}
+          }
+        }
+
+        if (!fullText) fullText = 'No answer generated.';
+        let badgeId = 'badge-' + Math.random().toString(36).substring(2, 9);
+        let badgeHtml = buildAssistantBadge(fullText, badgeId);
+        if (badgeHtml) {
+          bodyEl.innerHTML = escapeHtml(fullText) + badgeHtml;
+        }
+        updateAuthHelper(fullText);
+        chatHistory.push({ role: 'assistant', content: fullText });
 
       } catch (err) {
         removeLoadingBubble();

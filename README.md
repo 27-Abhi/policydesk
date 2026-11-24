@@ -1,44 +1,53 @@
 # PolicyDesk
 
-**High-assurance, stateful financial support engine with Human-in-the-Loop (HITL) compliance orchestration, hierarchical RAG, and network ingress isolation.**
+**High-assurance, stateful financial support engine with Human-in-the-Loop (HITL) compliance orchestration, Agentic Corrective RAG (CRAG), and strict dual-port ingress isolation.**
 
 ---
 
 ## Overview
 
-Automated financial support systems often fail when customer requests require compliance oversight (disputes, fraud reporting) or sensitive multi-turn identity verification. 
+Automated financial support systems often fail when customer requests require compliance oversight (disputes, fraud reporting), multi-turn identity verification, or strict factual grounding over regulatory policy documents.
 
-PolicyDesk solves this by orchestrating support workflows with **LangGraph** state machines and **FastAPI**, isolating public customer traffic from internal compliance tooling while maintaining unified, deterministic state transitions.
+PolicyDesk solves this by orchestrating support workflows with **LangGraph** cyclic state machines and **FastAPI**, isolating public customer traffic from internal compliance tooling while maintaining deterministic state transitions and bounded Corrective RAG verification.
 
 ```
                     ┌────────────────────────────────────────────────────────┐
                     │                   PolicyDesk Gateway                   │
                     │                                                        │
-[Customer Client] ──┼─► Port 8000: Customer Portal                           │
-                    │   • Interactive Chat & 2FA Challenge UI                │
-                    │   • POST /v1/chat/completions (SSE Stream & JSON)      │
-                    │   • GET  /v1/disputes/{thread_id}/events (SSE Push)    │
+[Customer Client] ──┼─► Port 8000: Customer Portal (customer_v1_router)      │
+                    │   • Interactive Chat, Live Streaming & 2FA UI          │
+                    │   • Architecture Explainer & Recorder (/explainer)     │
+                    │   • POST /v1/chat/completions (JSON & SSE Streaming)   │
+                    │   • GET  /v1/disputes/{thread_id}/events (Event Bus)   │
                     │                      │                                 │
                     │                      ▼                                 │
                     │         ┌────────────────────────┐                     │
                     │         │  LangGraph StateGraph  │                     │
+                    │         │  (15 Nodes / Bounded)  │                     │
                     │         │  ────────────────────  │                     │
-                    │         │  • Typed State Machine │                     │
-                    │         │  • Parent-Child RAG    │                     │
+                    │         │  • Prompt Guardrails   │                     │
+                    │         │  • Hybrid BM25 + Vec   │                     │
+                    │         │  • CRAG Rewrite & Check│                     │
                     │         │  • 2FA Identity Engine │                     │
                     │         │  • HITL Breakpoints    │                     │
                     │         └───────────┬────────────┘                     │
                     │                     │                                  │
-                    │                     ▼                                  │
-                    │         ┌────────────────────────┐                     │
-                    │         │  MemorySaver Checkpoint│                     │
-                    │         └───────────▲────────────┘                     │
+                    │         ┌───────────┴────────────┐                     │
+                    │         ▼                        ▼                     │
+                    │ ┌────────────────┐     ┌───────────────────┐           │
+                    │ │ ThreadSafe     │     │   PostgreSQL 16   │           │
+                    │ │ SqliteSaver    │     │   (psycopg v3 +   │           │
+                    │ │ (WAL Mode) +   │     │   FOR UPDATE 2FA) │           │
+                    │ │ sqlite-vec     │     │ Accounts/Disputes │           │
+                    │ └────────────────┘     └───────────────────┘           │
+                    │         ▲                        ▲                     │
+                    │         └───────────┬────────────┘                     │
                     │                     │                                  │
-[Internal Staff]  ──┼─► Port 8001: Compliance Operations                     │
+[Internal Staff]  ──┼─► Port 8001: Compliance Operations (admin_v1_router)   │
                     │   • Dispute Case Review Board (Approve / Reject)       │
                     │   • Escalation Ticket Queue (SLA Triage)               │
-                    │   • RAG Observability & Chunk Inspector                │
-                    │   • POST /v1/disputes/{thread_id}/review               │
+                    │   • CRAG Observability, Citations & Latency Inspector  │
+                    │   • Optional X-Admin-Key / Bearer Auth Enforcement     │
                     └────────────────────────────────────────────────────────┘
 ```
 
@@ -46,36 +55,41 @@ PolicyDesk solves this by orchestrating support workflows with **LangGraph** sta
 
 ## Key Capabilities
 
-### 1. Dual-Port Ingress Isolation
-- **Public Customer Ingress (`0.0.0.0:8000`)**: Serves the customer-facing web interface and OpenAI-compatible `/v1/chat/completions` API.
-- **Internal Compliance Ingress (`0.0.0.0:8001`)**: Serves the compliance dashboard, ticket triage queue, and dispute decision APIs.
-- **Unified Process Runtime**: Both Uvicorn servers run concurrently under `asyncio.gather` within a single process ([`app/serve.py`](app/serve.py)), sharing an in-memory checkpointer and core banking state without external synchronization overhead.
+### 1. Strict Dual-Port Ingress Isolation
+- **Public Customer Ingress (`0.0.0.0:8000`)**: Mounts strictly `customer_v1_router` (`POST /v1/chat/completions`, `GET /v1/disputes/{thread_id}/events`, `GET /v1/policies`), serving the customer UI and `/explainer`. Compliance review, ingestion, and debug endpoints return `404` on Port 8000.
+- **Internal Compliance Ingress (`0.0.0.0:8001`)**: Mounts `admin_v1_router`, `/v1/disputes`, and `/v1/escalations`, protected by optional `ADMIN_API_KEY` header/bearer authentication.
+- **Configurable CORS**: Reads `CORS_ALLOWED_ORIGINS` (defaulting to localhost ports `8000` and `8001`) rather than wildcard origins.
+- **Unified Process Runtime**: Both Uvicorn servers run concurrently under `asyncio.gather` within a single process ([`app/serve.py`](app/serve.py)), sharing core banking state and the in-memory `DisputeEventBus` without polling overhead.
 
-### 2. Human-in-the-Loop (HITL) Dispute Resolution
-- Disputed transactions trigger a stateful pause in the graph via LangGraph's native `interrupt()`, persisting thread execution to the checkpointer.
-- Compliance reviewers inspect dispute evidence on Port 8001 and submit an approval or rejection decision.
-- Execution seamlessly resumes via `Command(resume=...)`, notifying the customer client and updating dispute records in real time.
+### 2. Human-in-the-Loop (HITL) Dispute Resolution & Event-Driven SSE
+- Disputed transactions persist to relational storage (`record_dispute`) and trigger a stateful pause via LangGraph's `interrupt()`, checkpointing execution to `ThreadSafeSqliteSaver` in WAL mode.
+- Compliance reviewers adjudicate cases on Port 8001 (`POST /v1/disputes/{thread_id}/review`).
+- Execution resumes via `Command(resume=...)` and immediately pushes a `dispute_resolved` event via `DisputeEventBus` ([`app/events.py`](app/events.py)) to any active `GET /v1/disputes/{thread_id}/events` SSE stream.
 
-### 3. Server-Sent Events (SSE) Push
-- Rather than requiring inefficient browser polling, Port 8000 exposes `GET /v1/disputes/{thread_id}/events`.
-- When an investigator acts on Port 8001, the event is immediately pushed across the active HTTP/1.1 stream (`text/event-stream`), resolving the customer chat card instantly.
+### 3. Agentic Hybrid Corrective RAG (CRAG)
+- **Structure-Aware Ingestion** ([`app/rag/ingest.py`](app/rag/ingest.py)): Strips PDF running headers/page footers, preserves section headings and page numbers for inline citations, and sanitizes upload filenames against path traversal.
+- **Hybrid Retrieval + RRF Fusion** ([`app/rag/store.py`](app/rag/store.py), [`app/rag/embeddings.py`](app/rag/embeddings.py)): Combines Okapi BM25 (`k1=1.5, b=0.75`) over stemmed unigrams/bigrams and typo-resolved tokens (`difflib`) with dense semantic vectors (`sqlite-vec` + local 256-dim subword/concept embedder, or OpenAI/Ollama embeddings when `ENABLE_REMOTE_EMBEDDINGS=true`), fused via Reciprocal Rank Fusion (RRF).
+- **Stage-2 Cross-Feature Reranker** ([`app/rag/reranker.py`](app/rag/reranker.py)): Re-scores parent passages using dense alignment, IDF coverage, bigram overlap, section alignment, and optional LLM verification (`ENABLE_LLM_RERANK=true`).
+- **Bounded CRAG Cycles** ([`app/graph/rag_nodes.py`](app/graph/rag_nodes.py)):
+  - `grade_documents -> rewrite_query -> retrieve_parent_chunks` (bounded by `MAX_RETRIEVAL_ATTEMPTS = 2`).
+  - `generate_answer -> verify_grounding` (checks numeric/currency/percentage grounding against retrieved clauses; bounded by `MAX_GENERATION_ATTEMPTS = 2`), failing closed to `abstain_policy_answer`.
 
-### 4. Hierarchical Parent-Child RAG
-- Policy PDF documents are ingested into a two-tier vector memory store ([`app/rag/store.py`](app/rag/store.py)).
-- **Chunking Strategy**: 500-character paragraph parent chunks are mapped to 160-character sentence child chunks.
-- **Retrieval Flow**: Search runs cosine vector similarity against child chunks to locate granular facts, then returns full, cohesive parent clauses to eliminate fragmented context.
-- **Relevance Grading**: Query-to-clause similarity is scored prior to generation; irrelevant queries cleanly fall back without hallucination.
+### 4. Prompt-Injection Guardrails & Multi-Turn 2FA Identity Engine
+- **Input Sanitization** ([`app/graph/nodes.py`](app/graph/nodes.py)): Enforces control-char stripping, `MAX_INPUT_LENGTH = 2000`, and prompt-injection/override detection that short-circuits malicious requests to safe refusal.
+- **2FA Security** ([`app/tools/bank_db.py`](app/tools/bank_db.py)): Dynamic 6-digit OTPs (300s TTL, never logged in plaintext), RFC 6238 TOTP (`pyotp`), and 3-attempt brute-force lockout using `RLock` in memory and atomic `SELECT ... FOR UPDATE` row-level locking in `PostgresBankDatabase`.
 
-### 5. Multi-Turn 2FA Security Engine
-- Authenticated account inquiries require phone-based verification before sensitive balances or transaction logs are exposed.
-- Implements RFC 6238 TOTP Authenticator apps (`pyotp`) and cryptographically randomized SMS tokens.
-- **Defense in Depth**: Enforces a strict 3-attempt brute-force lockout before any master bypass checks are evaluated.
+### 5. Pluggable Multi-Provider LLM Client & Live Token Streaming
+- Supports Anthropic Claude, OpenAI (and OpenAI-compatible endpoints), local Ollama (`gemma3:1b` / `qwen3:0.6b`), and a zero-cost `DeterministicMockClient` ([`app/llm/client.py`](app/llm/client.py)).
+- Non-blocking execution via `anyio.to_thread.run_sync` and real live token streaming for `stream=True` policy completions with post-stream numeric grounding verification.
+
+### 6. Observability & Quantitative Evaluation
+- **Telemetry** ([`app/observability.py`](app/observability.py)): Per-node execution latency tracking, OpenTelemetry spans, token usage calculation in `/v1/chat/completions`, and full CRAG/citation debug inspection at `/v1/chat/debug`.
+- **Automated Retrieval Benchmark** ([`scripts/evaluate_rag.py`](scripts/evaluate_rag.py)): Evaluates 170 golden queries (`evals/golden_benchmark.json`) across Hit@1, Hit@3, MRR, and out-of-scope specificity.
+- **Agentic E2E Benchmark** ([`scripts/evaluate_agentic.py`](scripts/evaluate_agentic.py)) & **DeepEval Suite** ([`evals/test_deepeval.py`](evals/test_deepeval.py)).
 
 ---
 
 ## State Machine Architecture
-
-PolicyDesk routes every incoming request through a sanitized deterministic intent router:
 
 ```
                           ┌─────────────┐
@@ -84,7 +98,7 @@ PolicyDesk routes every incoming request through a sanitized deterministic inten
                                  │
                                  ▼
                           ┌─────────────┐
-                          │  sanitize   │
+                          │  sanitize   │───[injection/error]──► out_of_scope_placeholder ──► END
                           └──────┬──────┘
                                  │
                                  ▼
@@ -93,7 +107,6 @@ PolicyDesk routes every incoming request through a sanitized deterministic inten
                        └─────────┬─────────┘
                                  │
         ┌───────────────┬────────┼───────────────┬────────────────┐
-        │               │        │               │                │
         ▼               ▼        ▼               ▼                ▼
 ┌───────────────┐┌────────────┐┌────────────┐┌───────────────┐┌───────────────┐
 │policy_question││ acct_lookup││  dispute   ││ human_request ││ out_of_scope  │
@@ -101,9 +114,11 @@ PolicyDesk routes every incoming request through a sanitized deterministic inten
         │              │             │               │                │
         ▼              ▼             ▼               ▼                ▼
 ┌───────────────┐┌────────────┐┌────────────┐┌───────────────┐┌───────────────┐
-│4-Step RAG Flow││ 2FA Engine ││HITL Pause /││Support Ticket ││ Safe Refusal  │
+│ CRAG Pipeline ││ 2FA Engine ││HITL Pause /││Support Ticket ││ Safe Refusal  │
 │Retrieve-Grade-││State-Driven││interrupt() ││SLA Triage Tier││  Fallback     │
-│Rerank-Generate││Verification││& Resumption││  Assignment   ││               │
+│Rewrite(<=2)-  ││Verification││& Resumption││  Assignment   ││               │
+│Rerank-Gen-    ││(FOR UPDATE)││+ Event Bus ││+ PG Persist   ││               │
+│Verify(<=2)    ││            ││            ││               ││               │
 └───────┬───────┘└─────┬──────┘└─────┬──────┘└───────┬───────┘└───────┬───────┘
         │              │             │               │                │
         └──────────────┴────────┬────┴───────────────┴────────────────┘
@@ -116,127 +131,52 @@ PolicyDesk routes every incoming request through a sanitized deterministic inten
 
 ---
 
-## Repository Structure
-
-```
-policydesk/
-├── app/
-│   ├── serve.py              # Dual-port concurrent gateway runner (8000 & 8001)
-│   ├── customer_app.py       # Port 8000 FastAPI customer portal
-│   ├── admin_app.py          # Port 8001 FastAPI compliance operations portal
-│   ├── main.py               # Standalone FastAPI service & CLI runner
-│   ├── static/
-│   │   ├── customer.html     # Customer chat & 2FA interactive interface
-│   │   └── compliance.html   # Compliance investigation dashboard
-│   ├── api/
-│   │   ├── schemas.py        # Pydantic schemas (Chat completions, disputes)
-│   │   └── v1/
-│   │       └── router.py     # V1 endpoints (Chat, dispute review, SSE events)
-│   ├── graph/
-│   │   ├── state.py          # Intent enum and PolicyDeskState TypedDict
-│   │   ├── graph.py          # StateGraph builder and MemorySaver compilation
-│   │   ├── nodes.py          # Sanitize, intent classification, fallback
-│   │   ├── rag_nodes.py      # Retrieve, grade, rerank, and generate
-│   │   ├── dispute_nodes.py  # 3-node HITL dispute pipeline with interrupt()
-│   │   ├── account_nodes.py  # Multi-turn 2FA account lookup
-│   │   ├── escalation_nodes.py # Customer Care ticketing & SLA prioritization
-│   │   └── router.py         # Deterministic conditional edge routing
-│   ├── rag/
-│   │   ├── store.py          # ParentChildVectorStore & stopword stemmer
-│   │   └── ingest.py         # PDF parser & chunking ingestion pipeline
-│   └── tools/
-│       └── bank_db.py        # Core banking mock DB & 2FA cryptographic engine
-├── data/
-│   └── policies/             # Ingested PDF documents (Deposit Policies)
-├── tests/
-│   ├── conftest.py           # Pytest test guards
-│   ├── test_port_apps.py     # Integration tests for Port 8000 & 8001
-│   ├── test_dispute.py       # HITL dispute pause, resume, and review API
-│   ├── test_account_escalation.py # 2FA auth and customer escalation
-│   ├── test_rag.py           # RAG retrieval and PDF ingestion
-│   ├── test_api.py           # FastAPI completion and streaming endpoints
-│   ├── test_router.py        # Routing and fallback edge cases
-│   └── test_nodes.py         # Input sanitization and intent classifiers
-└── pyproject.toml            # Project dependencies and configuration
-```
-
----
-
 ## Getting Started
 
-### Prerequisites
-- Python 3.10+ (Python 3.11 recommended)
-- Git
-
-### Installation
+### Local Development
 
 ```bash
-# Clone the repository
 git clone https://github.com/27-Abhi/policydesk.git
 cd policydesk
 
-# Create and activate virtual environment
 python -m venv .venv
-source .venv/bin/activate       # On Linux/macOS
-# .\.venv\Scripts\Activate.ps1  # On Windows PowerShell
-
-# Install package in editable mode
-pip install -e .
+source .venv/bin/activate       # On Linux/macOS (.venv\Scripts\Activate.ps1 on Windows)
 pip install -e ".[dev]"
+
+cp .env.example .env
+python app/serve.py
 ```
 
-### Running the Application
-
-Launch both portals simultaneously using the concurrent gateway:
+### Docker Compose (EC2 Free Tier Ready)
 
 ```bash
-python -m app.serve
+docker compose up -d --build
 ```
 
-Once running:
-- **Customer Portal**: [`http://localhost:8000`](http://localhost:8000)
+Access points:
+- **Customer Chat Portal**: [`http://localhost:8000`](http://localhost:8000)
+- **Animated Architecture Explainer**: [`http://localhost:8000/explainer`](http://localhost:8000/explainer)
 - **Compliance Operations Dashboard**: [`http://localhost:8001`](http://localhost:8001)
 
 ---
 
-## Running Verification Tests
-
-PolicyDesk includes a comprehensive test suite across all subsystems:
+## Verification & Benchmarks
 
 ```bash
-# Run targeted integration tests
-pytest tests/test_port_apps.py tests/test_dispute.py tests/test_account_escalation.py tests/test_rag.py tests/test_api.py
+# Run full automated pytest suite
+pytest -v
+
+# Run 170-query offline Hybrid RAG retrieval benchmark
+python scripts/evaluate_rag.py
+
+# Run end-to-end Agentic routing, HITL, 2FA, and injection evaluation
+python scripts/evaluate_agentic.py
 ```
 
 ---
 
-## API Reference
-
-### Customer Gateway (Port 8000)
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/` | `GET` | Interactive Customer Chat & 2FA Web Application |
-| `/v1/chat/completions` | `POST` | OpenAI-compatible chat completion (Supports JSON & SSE Streaming) |
-| `/v1/disputes/{thread_id}/events` | `GET` | Real-time Server-Sent Events stream for dispute status resolution |
-| `/health` | `GET` | Service readiness probe |
-
-### Compliance Gateway (Port 8001)
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/` | `GET` | Staff Compliance Review Dashboard |
-| `/v1/disputes` | `GET` | Query all active and archived dispute threads |
-| `/v1/disputes/{thread_id}` | `GET` | Detailed metadata and evidence for a specific dispute thread |
-| `/v1/disputes/{thread_id}/review` | `POST` | Approve or reject a paused dispute, resuming the graph |
-| `/v1/escalations` | `GET` | List prioritized Customer Care escalation tickets |
-| `/v1/rag/inspect` | `POST` | Observability endpoint to test retrieval and grading against policy chunks |
-| `/health` | `GET` | Compliance gateway readiness probe |
-
----
-
-## Technical Specifications & Invariants
-
-- **Zero-Dependency Vector Store**: Document similarity uses an in-memory TF cosine vectorizer with a pre-compiled English stopword set, removing heavy runtime dependencies.
-- **Fail-Safe Intent Routing**: Unrecognized or malicious inputs fall back deterministically to `out_of_scope_placeholder`.
-- **Checkpoint Isolation**: Sessions are isolated by `thread_id` headers (`X-Thread-ID`), guaranteeing zero state crosstalk between customer interactions.
+## Technical Documentation
+- [Technical Interview Dossier](docs/INTERVIEW_GUIDE.md)
+- [Know By Heart Cheat Sheet](docs/KNOW_BY_HEART.md)
+- [Agentic AI Interview Guide](docs/AGENTIC_AI_INTERVIEW_GUIDE.md)
+- [AWS EC2 Free Tier Deployment Guide](docs/DEPLOYMENT_EC2.md)

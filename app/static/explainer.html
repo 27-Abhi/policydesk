@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolicyDesk - Architecture Explainer & Complete End-to-End Query Lifecycle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+      50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.8); }
+    }
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -40; }
+    }
+    @keyframes fieldAppear {
+      0%   { opacity: 0; transform: translateY(-6px) scale(0.97); background: rgba(16,185,129,0.22); }
+      40%  { opacity: 1; transform: translateY(0) scale(1);       background: rgba(16,185,129,0.18); }
+      100% { opacity: 1; transform: translateY(0) scale(1);       background: transparent; }
+    }
+    @keyframes fieldChange {
+      0%   { background: rgba(251,191,36,0.28); }
+      60%  { background: rgba(251,191,36,0.15); }
+      100% { background: transparent; }
+    }
+    @keyframes codeTyping {
+      from { opacity: 0; transform: translateX(-4px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes progressPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .active-step-glow {
+      animation: pulseGlow 2s infinite;
+      border-color: #38bdf8 !important;
+      background: rgba(15, 23, 42, 0.95) !important;
+    }
+    .flow-line-active {
+      stroke-dasharray: 8, 8;
+      animation: dashFlow 1.2s linear infinite;
+      stroke: #38bdf8 !important;
+      stroke-width: 3 !important;
+    }
+    .state-field-new {
+      animation: fieldAppear 1.2s ease-out forwards;
+      border-left: 2px solid #10b981;
+    }
+    .state-field-changed {
+      animation: fieldChange 1.2s ease-out forwards;
+      border-left: 2px solid #f59e0b;
+    }
+    .state-field-unchanged {
+      opacity: 0.45;
+      border-left: 2px solid transparent;
+    }
+    .code-block-animate {
+      animation: codeTyping 0.4s ease-out;
+    }
+    .progress-bar-fill {
+      transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    pre code {
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+
+  <!-- Top Header Navigation -->
+  <header class="bg-slate-900/95 border-b border-slate-800 px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 backdrop-blur">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+        <i class="fa-solid fa-network-wired text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base tracking-wide flex items-center gap-2">
+          PolicyDesk <span class="text-xs bg-cyan-950 text-cyan-400 border border-cyan-800 px-2 py-0.5 rounded-full font-mono">Architecture Explainer & Query Lifecycle</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">Step-by-Step Deep Dive: From Browser Click to Ingress, StateGraph, RAG/HITL, Database, and Response</p>
+      </div>
+    </div>
+
+    <!-- Playback & Video Recording Actions -->
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center bg-slate-800/90 rounded-lg p-1 border border-slate-700">
+        <button onclick="prevStep()" class="px-2.5 py-1 text-xs text-slate-300 hover:text-white hover:bg-slate-700 rounded transition flex items-center gap-1">
+          <i class="fa-solid fa-backward-step"></i> Prev
+        </button>
+        <button id="play-btn" onclick="togglePlay()" class="px-3.5 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-play" id="play-icon"></i> <span id="play-text">Autoplay</span>
+        </button>
+        <button onclick="nextStep()" class="px-2.5 py-1 text-xs text-slate-300 hover:text-white hover:bg-slate-700 rounded transition flex items-center gap-1">
+          Next <i class="fa-solid fa-forward-step"></i>
+        </button>
+      </div>
+
+      <button id="record-btn" onclick="toggleRecordVideo()" class="text-xs bg-rose-600 hover:bg-rose-500 text-white font-medium px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 shadow shadow-rose-900/40">
+        <span class="w-2 h-2 rounded-full bg-white animate-ping" id="rec-dot" style="display: none;"></span>
+        <i class="fa-solid fa-video" id="rec-icon"></i>
+        <span id="rec-text">Record Video (.webm)</span>
+      </button>
+
+      <button onclick="toggleCheatSheetModal(true)" class="text-xs bg-amber-600 hover:bg-amber-500 text-white font-medium px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow shadow-amber-900/40">
+        <i class="fa-solid fa-graduation-cap"></i> Interview Master Guide
+      </button>
+
+      <a href="/" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-arrow-left"></i> Customer Portal
+      </a>
+    </div>
+  </header>
+
+  <!-- Interactive Scenario Selector Pill Toolbar -->
+  <div class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="flex items-center gap-2">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Select Workflow:</span>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="selectScenario('rag')" id="btn-scenario-rag" class="scenario-btn px-3 py-1.5 rounded-lg border border-cyan-500 bg-cyan-950/80 text-cyan-300 font-medium transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-book-bookmark text-cyan-400"></i> Policy Question (Hierarchical RAG)
+        </button>
+        <button onclick="selectScenario('dispute')" id="btn-scenario-dispute" class="scenario-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-medium transition hover:border-slate-600 flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Dispute Transaction (HITL & SSE)
+        </button>
+        <button onclick="selectScenario('auth')" id="btn-scenario-auth" class="scenario-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-medium transition hover:border-slate-600 flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-emerald-400"></i> Account Lookup (2FA & Ledger)
+        </button>
+        <button onclick="selectScenario('escalation')" id="btn-scenario-escalation" class="scenario-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-medium transition hover:border-slate-600 flex items-center gap-1.5">
+          <i class="fa-solid fa-headset text-rose-400"></i> Customer Care (SLA Triage)
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Query Preview Bar -->
+    <div class="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 flex items-center gap-2 font-mono text-[11px] text-slate-300">
+      <span class="text-cyan-400 font-bold">Query:</span>
+      <span id="active-query-text" class="text-slate-100 italic">"What is the international wire transfer fee policy?"</span>
+    </div>
+  </div>
+
+  <!-- Step-by-Step Progress Ribbon -->
+  <div class="bg-slate-900/60 border-b border-slate-800/80 px-6 py-2.5 flex items-center overflow-x-auto text-xs space-x-2">
+    <div id="steps-ribbon" class="flex items-center space-x-2 w-full">
+      <!-- Steps injected dynamically by JS -->
+    </div>
+  </div>
+
+  <!-- Main Split Layout -->
+  <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+
+    <!-- Left Column: Visual Architectural Canvas & Data Topology (7 Cols) -->
+    <div class="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 p-5 flex flex-col shadow-2xl relative">
+      
+      <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-cyan-500 text-black font-bold flex items-center justify-center text-xs" id="stage-number">1</span>
+          <h2 class="text-sm font-bold text-white tracking-wide" id="step-name">HTTP Ingress & Thread Partitioning</h2>
+        </div>
+        <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800" id="step-component">
+          FastAPI Router (Port 8000)
+        </span>
+      </div>
+
+      <!-- SVG End-to-End Diagram -->
+      <div class="flex-1 w-full bg-slate-950 rounded-xl border border-slate-800/80 p-2.5 relative flex items-center justify-center min-h-[385px] overflow-hidden">
+        <svg id="lifecycle-svg" viewBox="0 0 860 410" class="w-full h-full max-h-[385px]">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#06b6d4" />
+            </marker>
+            <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b" />
+            </marker>
+            <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981" />
+            </marker>
+            <marker id="arrow-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#f43f5e" />
+            </marker>
+          </defs>
+
+          <!-- System Boundary Box -->
+          <rect x="18" y="18" width="824" height="374" rx="14" fill="#0b1120" stroke="#1e293b" stroke-width="2" />
+          <text x="32" y="42" fill="#64748b" font-size="10.5" font-family="monospace">PolicyDesk Process (1,024 MB RAM • app/serve.py • Dual-Port asyncio.gather Ingress)</text>
+
+          <!-- Row 1: Ingress & Core Routing Pipeline -->
+          <!-- Node 1: Ingress Client (Port 8000) -->
+          <g id="box-ingress">
+            <rect x="30" y="62" width="135" height="56" rx="8" fill="#0f172a" stroke="#06b6d4" stroke-width="2" />
+            <text x="40" y="85" fill="#38bdf8" font-size="11.5" font-weight="bold">1. Customer Ingress</text>
+            <text x="40" y="103" fill="#94a3b8" font-size="9">Port 8000 (SSE / JSON)</text>
+          </g>
+
+          <!-- Node 2: Sanitize -->
+          <g id="box-sanitize">
+            <rect x="185" y="62" width="120" height="56" rx="8" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="195" y="85" fill="#e2e8f0" font-size="11.5" font-weight="bold">2. sanitize()</text>
+            <text x="195" y="103" fill="#94a3b8" font-size="9">Strip ctrl / cap 2,000c</text>
+          </g>
+
+          <!-- Node 3: Classify Intent -->
+          <g id="box-classify">
+            <rect x="325" y="62" width="135" height="56" rx="8" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="335" y="85" fill="#e2e8f0" font-size="11.5" font-weight="bold">3. classify_intent()</text>
+            <text x="335" y="103" fill="#94a3b8" font-size="9">2FA priority / Regex</text>
+          </g>
+
+          <!-- Node 4: Router Edge -->
+          <g id="box-router">
+            <rect x="480" y="62" width="145" height="56" rx="8" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="490" y="85" fill="#fde047" font-size="11.5" font-weight="bold">4. route_by_intent()</text>
+            <text x="490" y="103" fill="#94a3b8" font-size="9">Conditional Edge Map</text>
+          </g>
+
+          <!-- Node 5: Port 8001 Compliance Ingress (Top-Right) -->
+          <g id="box-port8001">
+            <rect x="645" y="62" width="180" height="56" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" />
+            <text x="655" y="85" fill="#fbbf24" font-size="11.5" font-weight="bold">Staff Portal (Port 8001)</text>
+            <text x="655" y="103" fill="#94a3b8" font-size="9">Dispute Review &amp; Triage</text>
+          </g>
+
+          <!-- Row 2: 4 Domain Subsystems -->
+          <!-- Subsystem Box A: Hierarchical RAG -->
+          <g id="box-rag">
+            <rect x="30" y="165" width="185" height="95" rx="9" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="40" y="186" fill="#38bdf8" font-size="11" font-weight="bold">Path A: Hierarchical RAG</text>
+            <text x="40" y="204" fill="#94a3b8" font-size="8.8">• 160c child / 500c parent</text>
+            <text x="40" y="220" fill="#94a3b8" font-size="8.8">• Cosine grading (&gt;= 0.1500)</text>
+            <text x="40" y="236" fill="#94a3b8" font-size="8.8">• Pluggable LLM (Ollama/Mock)</text>
+          </g>
+
+          <!-- Subsystem Box B: Dispute HITL -->
+          <g id="box-dispute">
+            <rect x="235" y="165" width="185" height="95" rx="9" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="245" y="186" fill="#fbbf24" font-size="11" font-weight="bold">Path B: HITL Dispute</text>
+            <text x="245" y="204" fill="#94a3b8" font-size="8.8">• extract_dispute_details</text>
+            <text x="245" y="220" fill="#94a3b8" font-size="8.8">• interrupt() [PAUSE mid-node]</text>
+            <text x="245" y="236" fill="#94a3b8" font-size="8.8">• Command(resume) on 8001</text>
+          </g>
+
+          <!-- Subsystem Box C: 2FA Core Banking -->
+          <g id="box-banking">
+            <rect x="440" y="165" width="185" height="95" rx="9" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="450" y="186" fill="#34d399" font-size="11" font-weight="bold">Path C: 2FA &amp; Ledger</text>
+            <text x="450" y="204" fill="#94a3b8" font-size="8.8">• CSPRNG OTP (300s TTL)</text>
+            <text x="450" y="220" fill="#94a3b8" font-size="8.8">• 3-attempt brute-force lock</text>
+            <text x="450" y="236" fill="#94a3b8" font-size="8.8">• SELECT ... FOR UPDATE lock</text>
+          </g>
+
+          <!-- Subsystem Box D: SLA Triage (Customer Care) -->
+          <g id="box-escalation">
+            <rect x="645" y="165" width="180" height="95" rx="9" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+            <text x="655" y="186" fill="#f43f5e" font-size="11" font-weight="bold">Path D: SLA Triage Queue</text>
+            <text x="655" y="204" fill="#94a3b8" font-size="8.8">• Priority derivation (P1/P2/P3)</text>
+            <text x="655" y="220" fill="#94a3b8" font-size="8.8">• Mint TICK-YYYYMMDD-XXXX</text>
+            <text x="655" y="236" fill="#94a3b8" font-size="8.8">• Port 8001 SLA Dashboard</text>
+          </g>
+
+          <!-- Row 3: Persistence Layer -->
+          <!-- Node: AsyncSqliteSaver WAL -->
+          <g id="box-sqlite">
+            <rect x="160" y="305" width="235" height="54" rx="8" fill="#0f172a" stroke="#eab308" stroke-width="1.5" />
+            <text x="172" y="327" fill="#fde047" font-size="11" font-weight="bold">AsyncSqliteSaver WAL (checkpoints.db)</text>
+            <text x="172" y="344" fill="#94a3b8" font-size="9">LangGraph state on disk • Survives reboot • ~2MB RAM</text>
+          </g>
+
+          <!-- Node: PostgreSQL 16 Alpine -->
+          <g id="box-postgres">
+            <rect x="445" y="305" width="255" height="54" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="1.5" />
+            <text x="457" y="327" fill="#6ee7b7" font-size="11" font-weight="bold">PostgreSQL 16 Alpine (psycopg v3)</text>
+            <text x="457" y="344" fill="#94a3b8" font-size="9">Accounts • Ledgers • Disputes • Escalations (256MB)</text>
+          </g>
+
+          <!-- Dynamic Connecting Lines -->
+          <path id="line-ingress-sanitize" d="M 165 90 L 185 90" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-sanitize-classify" d="M 305 90 L 325 90" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-classify-router" d="M 460 90 L 480 90" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+
+          <!-- Router down to branches -->
+          <path id="line-router-rag" d="M 552 118 L 552 140 L 122 140 L 122 165" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-router-dispute" d="M 552 118 L 552 140 L 327 140 L 327 165" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-router-banking" d="M 552 118 L 552 140 L 532 140 L 532 165" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-router-escalation" d="M 552 118 L 552 140 L 735 140 L 735 165" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow-rose)" />
+
+          <!-- Branches down to databases -->
+          <path id="line-dispute-sqlite" d="M 290 260 L 290 305" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-banking-postgres" d="M 532 260 L 532 305" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-escalation-postgres" d="M 735 260 L 735 285 L 610 285 L 610 305" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+          <path id="line-port8001-dispute" d="M 735 118 L 735 140 L 375 140 L 375 165" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow-amber)" />
+
+          <!-- High-Impact Architectural Upgrade: In-Memory SSE Push Arc (Port 8001 / Dispute -> Port 8000) -->
+          <path id="arc-sse-push" d="M 327 165 C 327 130, 97 130, 97 118" stroke="#10b981" stroke-width="2" stroke-dasharray="6,4" fill="none" marker-end="url(#arrow-emerald)" />
+        </svg>
+      </div>
+
+      <!-- Live Inspection Data Strip -->
+      <div class="mt-3 bg-slate-950 p-3 rounded-xl border border-slate-800 grid grid-cols-3 gap-3 text-xs font-mono">
+        <div>
+          <span class="text-slate-500 text-[10px] block uppercase">Current State Route</span>
+          <span class="text-cyan-400 font-bold" id="live-route">policy_question</span>
+        </div>
+        <div>
+          <span class="text-slate-500 text-[10px] block uppercase">Active Checkpointer</span>
+          <span class="text-amber-400 font-bold" id="live-checkpointer">AsyncSqliteSaver (WAL)</span>
+        </div>
+        <div>
+          <span class="text-slate-500 text-[10px] block uppercase">Telemetry Latency / RAM</span>
+          <span class="text-emerald-400 font-bold" id="live-latency">&lt; 0.4ms / 2.1MB</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live State Inspector + Code + Interview Defense -->
+    <div class="lg:col-span-5 flex flex-col gap-4 min-h-0">
+
+      <!-- Step Progress & Full Readable Explanation -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-2 text-[11px]">
+          <span class="font-bold text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-cyan-400"></i>
+            <span id="step-headline" class="text-white font-semibold">Input Sanitization &amp; Normalization</span>
+          </span>
+          <span class="font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded text-[10px]" id="step-file-label">app/graph/nodes.py</span>
+        </div>
+        <!-- Progress bar -->
+        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+          <div id="step-progress-bar" class="progress-bar-fill h-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500" style="width: 12.5%"></div>
+        </div>
+        <div class="flex items-center justify-between mt-2 mb-2 text-[10px] font-mono text-slate-500">
+          <span class="text-cyan-400 font-semibold" id="step-number-tag">Step 1 of 8</span>
+          <span class="text-indigo-400" id="step-component-badge">FastAPI Router (Port 8000)</span>
+        </div>
+        <!-- Full Explanation Paragraph (No truncation!) -->
+        <div class="border-t border-slate-800/80 pt-2.5">
+          <p class="text-xs text-slate-200 leading-relaxed font-sans" id="step-explanation">
+            Every raw string from the user passes through sanitize before entering intent classification. Strips non-printable ASCII control characters, collapses whitespace, and truncates input at 2,000 characters to prevent prompt injection or memory exhaustion.
+          </p>
+        </div>
+      </div>
+
+      <!-- Live PolicyDeskState Inspector -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex flex-col" style="max-height: 360px;">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/70">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Live PolicyDeskState</span>
+            <span class="text-[10px] font-mono text-slate-500">(TypedDict)</span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] font-mono">
+            <span class="px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400">● NEW</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-950 border border-amber-800 text-amber-400">● CHANGED</span>
+            <span class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-500">● SAME</span>
+          </div>
+        </div>
+        <div id="state-inspector" class="flex-1 overflow-y-auto scrollbar-thin p-3 font-mono text-[11px] space-y-1.5">
+          <!-- Rows injected by JS -->
+        </div>
+      </div>
+
+      <!-- Implementation Code Card -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/70">
+          <span class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-code text-indigo-400"></i> Implementation
+          </span>
+          <span class="text-[10px] font-mono text-slate-500 bg-slate-800 px-2 py-0.5 rounded">Python 3.11</span>
+        </div>
+        <div class="p-3 bg-slate-950 rounded-b-2xl overflow-x-auto">
+          <pre><code id="step-code" class="text-cyan-300 text-[11px] code-block-animate">...</code></pre>
+        </div>
+      </div>
+
+      <!-- Interviewer Trap & Defense -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex-1">
+        <div class="flex gap-0 h-full">
+          <!-- Probe -->
+          <div class="flex-1 p-4 border-r border-slate-800">
+            <div class="flex items-center gap-1.5 mb-2">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Interviewer Trap</span>
+            </div>
+            <p class="text-[11.5px] text-slate-200 font-medium italic leading-relaxed" id="interview-probe">
+              "Why serialize Intent enum to string?"
+            </p>
+          </div>
+          <!-- Defense -->
+          <div class="flex-1 p-4">
+            <div class="flex items-center gap-1.5 mb-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Staff Defense</span>
+            </div>
+            <p class="text-[11.5px] text-slate-300 leading-relaxed" id="interview-defense">
+              AsyncSqliteSaver checkpoints JSON-serialize state. Native Enums raise TypeError. Returning str(intent.value) guarantees zero serialization failures.
+            </p>
+          </div>
+        </div>
+        <div class="px-4 py-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-600 font-mono">
+          <span>AWS EC2 t3.micro • 1,024 MB RAM • AsyncSqliteSaver WAL</span>
+          <span class="text-cyan-400 font-bold" id="live-route-footer">policy_question</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- Interview Master Guide Modal Overlay -->
+  <div id="cheatsheet-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 sm:p-6">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-950/90 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-base">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              Staff Engineer Interview Master Guide & Architectural Dossier
+              <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">Recall Sheet</span>
+            </h2>
+            <p class="text-xs text-slate-400">Complete End-to-End Query Lifecycle, Architectural Invariants, Numerical Constants & Defense Strategies</p>
+          </div>
+        </div>
+        <button onclick="toggleCheatSheetModal(false)" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Tabs Toolbar -->
+      <div class="bg-slate-900 px-6 py-2.5 border-b border-slate-800 flex flex-wrap gap-2 text-xs">
+        <button onclick="switchCheatSheetTab('lifecycle')" id="tab-btn-lifecycle" class="px-3.5 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500 text-cyan-300 font-medium transition flex items-center gap-1.5">
+          <i class="fa-solid fa-timeline text-cyan-400"></i> Query Lifecycle Stages
+        </button>
+        <button onclick="switchCheatSheetTab('invariants')" id="tab-btn-invariants" class="px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield text-amber-400"></i> 7 Core Invariants
+        </button>
+        <button onclick="switchCheatSheetTab('numbers')" id="tab-btn-numbers" class="px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium transition flex items-center gap-1.5">
+          <i class="fa-solid fa-hashtag text-emerald-400"></i> Numbers to Memorize
+        </button>
+        <button onclick="switchCheatSheetTab('pitches')" id="tab-btn-pitches" class="px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium transition flex items-center gap-1.5">
+          <i class="fa-solid fa-microphone text-indigo-400"></i> Elevator Pitches
+        </button>
+      </div>
+
+      <!-- Modal Content Body (Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6 text-slate-300 text-xs leading-relaxed">
+        
+        <!-- Tab 1: Full Lifecycle Stages -->
+        <div id="tab-content-lifecycle" class="space-y-4">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+            <h3 class="text-sm font-bold text-cyan-400 mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-diagram-project"></i> The Complete 7-Stage End-to-End Query Lifecycle
+            </h3>
+            <p class="text-slate-400 text-xs mb-4">
+              Here is what happens when a query is transmitted from the user browser until the grounded response streams back or pauses for human review:
+            </p>
+
+            <div class="space-y-3 font-sans">
+              <!-- Stage 1 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 1: Public Customer Ingress &amp; Network Isolation</span>
+                  <span class="font-mono text-[10px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">Port 8000 (app/api/v1/router.py)</span>
+                </div>
+                <p class="text-slate-300 text-[11.5px]">
+                  HTTP POST request arrives at <code>/v1/chat/completions</code>. FastAPI inspects <code>X-Thread-ID</code> header. If missing, it generates a cryptographically random session UUID (<code>session_xxxx</code>). The compiled StateGraph is injected via <code>Depends(get_graph)</code>. Both Port 8000 and Compliance Port 8001 run concurrently on a single asyncio event loop inside <code>app/serve.py</code>, sharing in-memory SSE event queues without Redis.
+                </p>
+              </div>
+
+              <!-- Stage 2 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 2: In-Graph Input Sanitization &amp; Buffer Defense</span>
+                  <span class="font-mono text-[10px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">sanitize() (app/graph/nodes.py)</span>
+                </div>
+                <p class="text-slate-300 text-[11.5px]">
+                  Raw string enters the state machine. <code>re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)</code> strips dangerous ASCII control characters and prompt-injection artifacts, collapses whitespace, and hard-caps input length to 2,000 characters to prevent buffer attacks or memory spikes.
+                </p>
+              </div>
+
+              <!-- Stage 3 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 3: Context-Aware Intent Classification</span>
+                  <span class="font-mono text-[10px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">classify_intent() (app/graph/nodes.py)</span>
+                </div>
+                <p class="text-slate-300 text-[11.5px]">
+                  Multi-turn state check: If customer is in an active 2FA turn (<code>auth_step == "awaiting_phone"</code> or <code>"awaiting_otp"</code>), account lookup takes priority. Otherwise, regex scans for policy keywords (wire, fee, limit), dispute patterns (<code>TXN-xxxx</code>), or human requests. Intent is serialized to primitive string (<code>Intent.POLICY_QUESTION.value</code>) before returning to prevent JSON checkpoint serialization crashes.
+                </p>
+              </div>
+
+              <!-- Stage 4 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 4: Deterministic Conditional Edge Routing</span>
+                  <span class="font-mono text-[10px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">route_by_intent() (app/graph/router.py)</span>
+                </div>
+                <p class="text-slate-300 text-[11.5px]">
+                  Reads <code>state['intent']</code> against a strict 5-key mapping dictionary. All unrecognized, malformed, or hostile inputs fall back safely to <code>out_of_scope_placeholder</code>, guaranteeing zero unhandled exceptions.
+                </p>
+              </div>
+
+              <!-- Stage 5 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 5: Execution Subsystem Workflows</span>
+                  <span class="font-mono text-[10px] text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">RAG • HITL • 2FA • Escalation</span>
+                </div>
+                <ul class="list-disc pl-4 space-y-1.5 text-slate-300 text-[11px] mt-1">
+                  <li><strong>Hierarchical RAG:</strong> Searches 160-char sentence child chunks using in-memory TF cosine vectorizer (zero PyTorch overhead). Retrieves parent 500-char paragraph chunks. Strict cosine threshold (&gt;= 0.1500) grades relevance. Grounded generation synthesizes answer via pluggable multi-provider client (Ollama/OpenAI/Anthropic/Mock).</li>
+                  <li><strong>HITL Dispute:</strong> Parses transaction ID, generates <code>DISP-xxxxxxxx</code> case, freezes execution mid-node with LangGraph <code>interrupt()</code>. Compliance officer reviews on Port 8001 and resumes graph via <code>Command(resume=...)</code>. State unfreezes and updates customer in real-time over SSE.</li>
+                  <li><strong>Core Banking 2FA:</strong> Multi-turn state machine generates 6-digit CSPRNG OTP (300s TTL). Evaluates 3-attempt brute-force lockout with <code>SELECT ... FOR UPDATE</code> row lock before any bypass logic. Queries balance and ledgers using raw parameterized PostgreSQL SQL.</li>
+                  <li><strong>Customer Care Escalation:</strong> Maps request to P1 Critical (&lt; 3m), P2 High (&lt; 10m), or P3 Standard (&lt; 20m) SLA tiers. Persists ticket to PostgreSQL <code>escalations</code> table and displays in Port 8001 staff triage queue.</li>
+                </ul>
+              </div>
+
+              <!-- Stage 6 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 6: Disk-Backed Checkpoint Commit</span>
+                  <span class="font-mono text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">SqliteSaver WAL (app/graph/graph.py)</span>
+                </div>
+                <p class="text-slate-300 text-[11.5px]">
+                  Replaced leaking <code>MemorySaver</code> with disk-backed <code>SqliteSaver</code> in WAL mode (<code>checkpoints.db</code>). Consumes ~2 MB RAM on disk, bounded heap footprint, and survives server restarts so paused disputes resume without loss.
+                </p>
+              </div>
+
+              <!-- Stage 7 -->
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-white text-xs">Stage 7: Real-Time Response Delivery</span>
+                  <span class="font-mono text-[10px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">SSE Stream &amp; JSON (Port 8000)</span>
+                </div>
+                <p class="text-slate-300 text-[11.5px]">
+                  Streams response tokens chunk-by-chunk over standard HTTP/1.1 Server-Sent Events (<code>text/event-stream</code>). Delivers terminal <code>data: [DONE]</code> packet. Client UI renders markdown response instantly.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: 7 Core Invariants -->
+        <div id="tab-content-invariants" class="space-y-3 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">1. Outlaw MemorySaver</h4>
+              <p class="text-[11px] text-slate-300">MemorySaver leaks heap RAM monotonically (no TTL eviction) and drops pending dispute frames on reboot. We mandate disk-backed <code>SqliteSaver</code> in WAL mode (~2 MB RAM).</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">2. String Intent Serialization</h4>
+              <p class="text-[11px] text-slate-300">Python Enums raise <code>TypeError</code> when serialized to JSON blobs in checkpointers. Invariant: always return <code>str(intent.value)</code> before leaving nodes.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">3. Lockout Precedes Bypass</h4>
+              <p class="text-[11px] text-slate-300">The 3-attempt brute-force lockout check must execute strictly before master bypass validation. Otherwise locked accounts could be breached via replay attacks.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">4. Docker POSIX shm_size: 128mb</h4>
+              <p class="text-[11px] text-slate-300">PostgreSQL 16 shared_buffers=64MB crashes default Docker 64MB /dev/shm during parallel workers. Setting <code>shm_size: 128mb</code> prevents SIGBUS container crashes.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">5. Row-Level Concurrency (FOR UPDATE)</h4>
+              <p class="text-[11px] text-slate-300">Concurrent 2FA attempts and ledger transactions use <code>SELECT ... FOR UPDATE</code> inside explicit transaction blocks, serializing race conditions.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">6. Single-Process Multi-Port Ingress</h4>
+              <p class="text-[11px] text-slate-300">Ports 8000 and 8001 run on the same asyncio event loop via <code>asyncio.gather</code>. Enables Port 8001 to push directly to Port 8000 SSE queues without Redis.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 md:col-span-2">
+              <h4 class="font-bold text-amber-400 text-xs mb-1">7. Zero-Dependency TF Cosine Vector Store</h4>
+              <p class="text-[11px] text-slate-300">Eliminates heavy PyTorch runtime (saves ~600 MB resident memory) by using pure Python TF vectorization with precompiled stopwords and numpy/math cosine similarity.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Numbers to Memorize -->
+        <div id="tab-content-numbers" class="space-y-4 hidden">
+          <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
+            <table class="w-full text-left font-mono text-[11px]">
+              <thead class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[10px] uppercase">
+                <tr>
+                  <th class="p-2.5">Parameter / Metric</th>
+                  <th class="p-2.5">Value</th>
+                  <th class="p-2.5">Architectural Rationale</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                <tr><td class="p-2.5 font-bold text-cyan-400">RAG Parent Chunk</td><td class="p-2.5 font-bold text-white">500 chars</td><td>Complete paragraph context passed to LLM for grounded generation</td></tr>
+                <tr><td class="p-2.5 font-bold text-cyan-400">RAG Child Chunk</td><td class="p-2.5 font-bold text-white">160 chars</td><td>Dense sentence-level index to pinpoint specific legal clauses</td></tr>
+                <tr><td class="p-2.5 font-bold text-cyan-400">Cosine Relevance Threshold</td><td class="p-2.5 font-bold text-white">0.1500</td><td>Strict deterministic floor; prevents hallucination on out-of-domain queries</td></tr>
+                <tr><td class="p-2.5 font-bold text-amber-400">2FA OTP Length</td><td class="p-2.5 font-bold text-white">6 digits</td><td>CSPRNG secrets.choice token generation</td></tr>
+                <tr><td class="p-2.5 font-bold text-amber-400">2FA Token TTL</td><td class="p-2.5 font-bold text-white">300 seconds</td><td>5-minute regulatory expiration window</td></tr>
+                <tr><td class="p-2.5 font-bold text-amber-400">Lockout Threshold</td><td class="p-2.5 font-bold text-white">3 attempts</td><td>Immediate brute-force account lockout</td></tr>
+                <tr><td class="p-2.5 font-bold text-indigo-400">Dispute Statutory Window</td><td class="p-2.5 font-bold text-white">60 days</td><td>Regulation E compliance limit for unauthorized electronic transfers</td></tr>
+                <tr><td class="p-2.5 font-bold text-indigo-400">Provisional Credit SLA</td><td class="p-2.5 font-bold text-white">10 bus. days</td><td>Mandated timeframe for temporary credit during investigation</td></tr>
+                <tr><td class="p-2.5 font-bold text-emerald-400">EC2 Instance RAM</td><td class="p-2.5 font-bold text-white">1,024 MB</td><td>AWS Free Tier t3.micro boundary (2 vCPU, 1 GB RAM)</td></tr>
+                <tr><td class="p-2.5 font-bold text-emerald-400">Docker PostgreSQL RAM Limit</td><td class="p-2.5 font-bold text-white">256 MB</td><td>deploy.resources.limits in docker-compose.yml</td></tr>
+                <tr><td class="p-2.5 font-bold text-emerald-400">Docker Postgres shm_size</td><td class="p-2.5 font-bold text-white">128 MB</td><td>Prevents POSIX shared memory resize crash in Postgres 16</td></tr>
+                <tr><td class="p-2.5 font-bold text-emerald-400">PostgreSQL shared_buffers</td><td class="p-2.5 font-bold text-white">64 MB</td><td>Database cache allocation (~25% of Postgres memory limit)</td></tr>
+                <tr><td class="p-2.5 font-bold text-emerald-400">Linux Host Swapfile</td><td class="p-2.5 font-bold text-white">2.0 GB</td><td>Host swap safety buffer preventing Linux OOM Killer (Exit 137)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 4: Elevator Pitches -->
+        <div id="tab-content-pitches" class="space-y-4 hidden">
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">The 30-Second Elevator Pitch</span>
+            <p class="text-xs text-slate-200 leading-relaxed italic">
+              "PolicyDesk is a high-assurance financial support platform built with LangGraph and FastAPI that guarantees deterministic workflow compliance. It isolates public customer interactions from internal operations across separate network ports, enforces Human-in-the-Loop approval for unauthorized transactions using graph interrupts, and implements hierarchical parent-child RAG to ground every answer without hallucination—all running within a strictly hardened 1 GB AWS Free Tier memory envelope."
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">The 2-Minute Architectural Pitch</span>
+            <p class="text-xs text-slate-200 leading-relaxed">
+              "PolicyDesk was engineered around two hard constraints: regulatory financial compliance and micro-instance resource economics. In financial systems, agentic non-determinism is a liability. We designed a dual-port architecture where Port 8000 serves public customers and Port 8001 serves compliance officers. Both run in a single Python process under asyncio.gather, allowing compliance decisions on Port 8001 to push instant SSE updates to customer streams on Port 8000 without requiring an external Redis cluster.<br><br>
+              Instead of naive single-pass RAG, we built a bounded Hybrid Corrective RAG (CRAG) pipeline: indexing 160-character child sentence chunks with Okapi BM25 + sqlite-vec dense embeddings (RRF fusion) while retrieving 500-character parent paragraphs with page/section citations, backed by a 0.1500 relevance gate, query rewriting, Stage-2 reranking, and post-generation grounding verification. For multi-turn transactions like disputes, the graph pauses mid-node using LangGraph's interrupt() and commits state to ThreadSafeSqliteSaver in WAL mode—avoiding the monotonic memory leaks of MemorySaver. All relational banking records live in PostgreSQL 16 tuned for 256MB RAM with row-level FOR UPDATE locking to eliminate 2FA race conditions, deployed cleanly on a $0 AWS Free Tier t3.micro instance."
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-6 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+        <span>PolicyDesk Architectural Dossier</span>
+        <button onclick="toggleCheatSheetModal(false)" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-sans text-xs transition">
+          Close Guide
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lifecycle Script Engine -->
+  <script>
+    // Workflow Scenarios & Full Step-by-Step State Machines
+    const WORKFLOWS = {
+      rag: {
+        name: "Policy Question (Hierarchical RAG)",
+        query: "What is the international wire transfer fee policy?",
+        steps: [
+          {
+            num: 1, title: "HTTP Ingress & Session Partitioning", component: "FastAPI Router (Port 8000)",
+            file: "app/api/v1/router.py:90-115",
+            explanation: "The customer submits an HTTP request to POST /v1/chat/completions. FastAPI inspects the X-Thread-ID header. If absent, it mints a cryptographically secure random session UUID (session_xxxx). The compiled LangGraph StateGraph singleton is injected via FastAPI Depends(get_graph). Dual-port ingress on Port 8000 (Customer) and Port 8001 (Compliance) executes concurrently under asyncio.gather in a single Python process.",
+            code: "thread_id = x_thread_id or f'session_{uuid.uuid4().hex[:12]}'\nfinal_state = await graph.ainvoke(\n    {'user_input': prompt},\n    config={'configurable': {'thread_id': thread_id}}\n)",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "intent": "null",
+              "is_authenticated": "false",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why partition state by thread_id rather than using a single global graph state?"',
+            defense: '"LangGraph checkpointers use thread_id as the primary partition key in AsyncSqliteSaver. Thread isolation prevents state crosstalk between concurrent customers and guarantees 2FA or dispute states are strictly scoped to the active user."',
+            highlight: ["box-ingress"], active_lines: ["line-ingress-sanitize"], route: "policy_question",
+            latency: "< 0.3ms", ram_usage: "2.1MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Memory (HTTP Ingress)"
+          },
+          {
+            num: 2, title: "Input Sanitization & Buffer Protection", component: "sanitize() Node",
+            file: "app/graph/nodes.py:25-38",
+            explanation: "Raw input is sanitized before entering any NLP or classification logic. re.sub strips dangerous ASCII control characters (0x00-0x1F and 0x7F-0x9F), collapses repetitive whitespace, and hard-caps prompt length to 2,000 characters. This defends against prompt injection, memory exhaustion, and catastrophic regex backtracking.",
+            code: "clean = re.sub(r'[\\x00-\\x1f\\x7f-\\x9f]', '', user_input).strip()\nreturn {'user_input': clean[:2000]}",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "raw_input_len": "55",
+              "sanitized": "true",
+              "intent": "null",
+              "is_authenticated": "false",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why not just use standard Pydantic validation on the request model?"',
+            defense: '"Pydantic validates types at the HTTP boundary, but graph nodes can be invoked programmatically from internal CLI, queues, or background tasks. In-graph sanitization guarantees defense-in-depth regardless of the ingress vector."',
+            highlight: ["box-sanitize"], active_lines: ["line-sanitize-classify"], route: "policy_question",
+            latency: "< 0.1ms", ram_usage: "2.1MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "In-Memory CPU"
+          },
+          {
+            num: 3, title: "Intent Classification & Multi-Turn Priority", component: "classify_intent() Node",
+            file: "app/graph/nodes.py:40-95",
+            explanation: "Evaluates multi-turn state context. If the user is in an active 2FA turn, account lookup takes priority. Otherwise, scans for banking policy keywords (wire, fee, limit, deposit, policy). Classifies as Intent.POLICY_QUESTION and explicitly casts the enum to a primitive string (.value) to avoid JSON serialization crashes during checkpointing.",
+            code: "if any(term in text for term in ['wire', 'fee', 'limit', 'policy']):\n    return {'intent': Intent.POLICY_QUESTION.value, 'route': 'policy_question'}",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "raw_input_len": "55",
+              "sanitized": "true",
+              "intent": '"policy_question"',
+              "route": '"policy_question"',
+              "classification_method": '"deterministic_regex"',
+              "is_authenticated": "false",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why return a string instead of the native Intent enum?"',
+            defense: '"LangGraph serializes state checkpoints into JSON/msgpack blobs via AsyncSqliteSaver. Native Python Enums raise TypeError during JSON dumps. Returning the string value (.value) ensures universal serialization safety across all backends."',
+            highlight: ["box-classify"], active_lines: ["line-classify-router"], route: "policy_question",
+            latency: "< 0.2ms", ram_usage: "2.2MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "In-Memory CPU"
+          },
+          {
+            num: 4, title: "Conditional Edge Router Dispatch", component: "route_by_intent() Edge",
+            file: "app/graph/router.py:10-32",
+            explanation: "The StateGraph conditional edge function reads state['intent'] and returns the exact string target node. Maps 'policy_question' -> 'retrieve_parent_chunks'. The dictionary fallback guarantee routes all unmapped, corrupted, or hostile inputs to out_of_scope_placeholder with a safe refusal.",
+            code: "ROUTE_MAP = {\n    Intent.POLICY_QUESTION.value: 'retrieve_parent_chunks',\n    Intent.DISPUTE_ACTION.value: 'extract_dispute_details',\n}\nreturn ROUTE_MAP.get(intent, 'out_of_scope_placeholder')",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "intent": '"policy_question"',
+              "route": '"policy_question"',
+              "routing_target": '"retrieve_parent_chunks"',
+              "fallback_guaranteed": "true",
+              "is_authenticated": "false",
+              "graph_status": '"ROUTING"'
+            },
+            probe: '"What happens if classify_intent encounters an unhandled exception or None?"',
+            defense: '"The dictionary get() method defaults to out_of_scope_placeholder. The system guarantees that every conceivable input reaches a safe terminal node with zero unhandled graph exceptions."',
+            highlight: ["box-router"], active_lines: ["line-router-rag"], route: "policy_question",
+            latency: "< 0.1ms", ram_usage: "2.2MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Conditional Edge Map"
+          },
+          {
+            num: 5, title: "Ingestion & Dual Parent-Child Indexing", component: "ParentChildVectorStore",
+            file: "app/rag/store.py:25-70",
+            explanation: "Ingests banking policy documentation. Solves the classic RAG trade-off: large chunks dilute vector similarity search sensitivity, while small chunks strip necessary legal caveats and context. The store indexes 160-character sentence child chunks for high-precision search, each maintaining a pointer (parent_id) back to its full 500-character paragraph parent chunk.",
+            code: "parent_chunks = split_text(doc, chunk_size=500, overlap=50)\nfor p in parent_chunks:\n    children = split_sentences(p.text, max_len=160)\n    store.index(children, parent_id=p.id)",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "parent_chunk_size": "500",
+              "child_chunk_size": "160",
+              "indexed_documents": "14",
+              "total_child_chunks": "128",
+              "dual_indexing_active": "true",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why split into both parent and child chunks rather than a single 300-char chunk?"',
+            defense: '"Single-size chunking forces a compromise. Small 160-character child chunks locate the exact sentence match via term frequency, while passing the 500-character parent chunk to the LLM guarantees complete legal grounding without sentence fragmentation."',
+            highlight: ["box-rag"], active_lines: ["line-router-rag"], route: "policy_question",
+            latency: "0.8ms", ram_usage: "2.4MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "ParentChildVectorStore"
+          },
+          {
+            num: 6, title: "Zero-Dependency TF Cosine Retrieval", component: "retrieve_parent_chunks() Node",
+            file: "app/graph/rag_nodes.py:20-45",
+            explanation: "Tokenizes user query, filters against a precompiled 128-word English stopword set, and performs pure Python in-memory term frequency (TF) vectorization. Calculates dot-product cosine similarity against all 160-character child sentence chunks, dereferencing the top-3 matching parent paragraphs.",
+            code: "parents = store.search_parent_chunks(query, top_k=3)\n# Parent chunk: 500 chars, Child chunk: 160 chars\nreturn {'retrieved_docs': parents, 'route': 'policy_question'}",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "intent": '"policy_question"',
+              "routing_target": '"retrieve_parent_chunks"',
+              "retrieved_docs": '[ParentDoc(id="P-042", chars=500)]',
+              "top_k_retrieved": "3",
+              "vector_algorithm": '"TF_Cosine_Similarity"',
+              "pytorch_loaded": "false (0 MB RAM)",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why use pure Python TF-IDF cosine similarity instead of PyTorch SentenceTransformers?"',
+            defense: '"PyTorch with sentence-transformers consumes 450–650 MB of resident RAM and spikes 1 vCPU to 100%. On a 1,024 MB t3.micro EC2 instance, pure TF cosine vectorization consumes under 2 MB, runs in < 1ms, and eliminates OOM risks completely."',
+            highlight: ["box-rag"], active_lines: ["line-router-rag"], route: "policy_question",
+            latency: "1.2ms", ram_usage: "2.4MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "In-Memory Vector Store"
+          },
+          {
+            num: 7, title: "Strict Cosine Relevance Grading (0.1500 Floor)", component: "grade_documents() Node",
+            file: "app/graph/rag_nodes.py:48-70",
+            explanation: "Calculates the maximum cosine similarity score against a strict 0.1500 threshold. If score >= 0.1500, sets is_relevant=True. If below threshold, generation is refused immediately, protecting against prompt injections and out-of-domain hallucinations.",
+            code: "best_score = max(d.score for d in retrieved_docs)\nis_relevant = best_score >= 0.1500\nreturn {'is_relevant': is_relevant, 'relevance_score': round(best_score, 4)}",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "intent": '"policy_question"',
+              "retrieved_docs": '[ParentDoc(id="P-042", chars=500)]',
+              "relevance_score": "0.4285",
+              "is_relevant": "true",
+              "relevance_threshold": "0.1500",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why apply a hard 0.1500 threshold rather than letting the LLM decide relevance?"',
+            defense: '"Letting the LLM decide invites hallucination and wastes expensive inference tokens. The deterministic threshold guarantees that queries about out-of-domain topics (e.g., mortgages or weather) are rejected before calling the LLM."',
+            highlight: ["box-rag"], active_lines: ["line-router-rag"], route: "policy_question",
+            latency: "0.4ms", ram_usage: "2.5MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Deterministic Evaluator"
+          },
+          {
+            num: 8, title: "Document Reranking & Context Assembly", component: "rerank_documents() Node",
+            file: "app/graph/rag_nodes.py:60-75",
+            explanation: "Sorts verified relevant parent documents in descending order of relevance score. Deduplicates redundant paragraphs to assemble a clean context window for the synthesis prompt.",
+            code: "reranked = sorted(retrieved_docs, key=lambda d: d.score, reverse=True)\nreturn {'reranked_docs': [d.text for d in reranked]}",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "relevance_score": "0.4285",
+              "is_relevant": "true",
+              "reranked_docs": '["Section 4.2: International wire transfer fee is $45..."]',
+              "context_chars": "488",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why rerank documents if you already fetched top_k?"',
+            defense: '"LLMs suffer from lost-in-the-middle phenomena where information in the middle of prompts is ignored. Placing the highest-scoring parent chunk at index 0 guarantees the LLM attends to the most authoritative clause first."',
+            highlight: ["box-rag"], active_lines: ["line-router-rag"], route: "policy_question",
+            latency: "0.3ms", ram_usage: "2.5MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "In-Memory Sort"
+          },
+          {
+            num: 9, title: "Grounded Synthesis via Pluggable LLM Adapter", component: "generate_answer() Node",
+            file: "app/graph/rag_nodes.py:72-95",
+            explanation: "Resolves active provider via get_llm_client() (Ollama gemma3:1b / OpenAI / Claude / Deterministic Mock). Injects SYSTEM_GROUNDING_PROMPT, forcing the model to synthesize answers strictly from the parent chunk with exact fee and timeline citations.",
+            code: "client = get_llm_client()\nanswer = await client.agenerate(\n    query=user_input,\n    context=reranked_docs[0]\n)\nreturn {'answer': answer, 'route': 'policy_question'}",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "user_input": '"What is the international wire transfer fee policy?"',
+              "intent": '"policy_question"',
+              "is_relevant": "true",
+              "relevance_score": "0.4285",
+              "answer": '"According to Section 4.2 of bank policy, international wire transfers incur a $45 processing fee and settle within 48 business hours."',
+              "model_used": '"gemma3:1b (local)"',
+              "llm_provider": '"ollama"',
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"What happens if the local Ollama instance is unreachable or times out?"',
+            defense: '"The client wraps calls in try..except and automatically degrades to DeterministicMockClient with zero downtime or HTTP 500 errors. In production, this provides 100% resilience against upstream provider failures."',
+            highlight: ["box-rag"], active_lines: ["line-router-rag"], route: "policy_question",
+            latency: "480ms", ram_usage: "245MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Ollama localhost:11434 (gemma3:1b)"
+          },
+          {
+            num: 10, title: "Checkpoint Commit & SSE Token Streaming", component: "ThreadSafeSqliteSaver WAL & Streaming Ingress",
+            file: "app/api/v1/router.py",
+            explanation: "The completed PolicyDeskState is committed to checkpoints.db using ThreadSafeSqliteSaver in WAL mode. Port 8000 streams the grounded response tokens chunk-by-chunk to the customer browser over standard HTTP/1.1 SSE, concluding with data: [DONE].",
+            code: "async for token in _stream_live_tokens(client, prompt, context):\n    yield f'data: {chunk.model_dump_json()}\\n\\n'\nyield 'data: [DONE]\\n\\n'",
+            stateSnapshot: {
+              "thread_id": '"session_90f2b1a8c012"',
+              "intent": '"policy_question"',
+              "answer": '"According to Section 4.2 of bank policy, international wire transfers incur a $45 processing fee and settle within 48 business hours."',
+              "model_used": '"gemma3:1b (local)"',
+              "graph_status": '"COMPLETE"',
+              "checkpointer": '"ThreadSafeSqliteSaver WAL"',
+              "checkpoint_committed": "true",
+              "sse_streaming": "true",
+              "http_status": "200"
+            },
+            probe: '"Why not use MemorySaver for chat completions?"',
+            defense: '"MemorySaver leaks RAM monotonically because finished threads are never evicted, triggering Linux OOM on a 1 GB instance. ThreadSafeSqliteSaver in WAL mode lives on disk with ~2 MB RAM overhead and survives server restarts."',
+            highlight: ["box-sqlite", "box-ingress"], active_lines: ["line-dispute-sqlite"], route: "policy_question",
+            latency: "1.5ms", ram_usage: "2.3MB", checkpointer: "ThreadSafeSqliteSaver (WAL)", io_target: "checkpoints.db (Disk WAL)"
+          }
+        ]
+      },
+      dispute: {
+        name: "Dispute Transaction (HITL & SSE)",
+        query: "I need to dispute unauthorized transaction TXN-9012 for $850",
+        steps: [
+          {
+            num: 1, title: "HTTP Ingress & Thread Initialization", component: "FastAPI Ingress (Port 8000)",
+            file: "app/api/v1/router.py:90-110",
+            explanation: "Customer submits a dispute claim. FastAPI assigns X-Thread-ID and invokes the graph asynchronously with a dedicated thread session.",
+            code: "thread_id = x_thread_id or f'session_{uuid.uuid4().hex[:12]}'\nstate = await graph.ainvoke({'user_input': text}, config={'configurable': {'thread_id': thread_id}})",
+            stateSnapshot: {
+              "thread_id": '"session_dispute_01"',
+              "user_input": '"Dispute unauthorized TXN-9012 for $850"',
+              "intent": "null",
+              "dispute_id": "null",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why is thread_id mandatory for disputes?"',
+            defense: '"Disputes are multi-turn asynchronous workflows requiring resumption across different ports (Port 8000 -> Port 8001). The thread_id is the unique correlation key across the entire lifecycle."',
+            highlight: ["box-ingress"], active_lines: ["line-ingress-sanitize"], route: "dispute_action",
+            latency: "< 0.3ms", ram_usage: "2.1MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Memory (Port 8000 Ingress)"
+          },
+          {
+            num: 2, title: "Sanitize & Intent Routing", component: "classify_intent()",
+            file: "app/graph/nodes.py:65-75",
+            explanation: "Detects transaction pattern TXN-9012 and keyword 'dispute'. Classifies as Intent.DISPUTE_ACTION and routes toward dispute handler.",
+            code: "if 'dispute' in text:\n    return {'intent': Intent.DISPUTE_ACTION.value, 'route': 'dispute_action'}",
+            stateSnapshot: {
+              "thread_id": '"session_dispute_01"',
+              "user_input": '"Dispute unauthorized TXN-9012 for $850"',
+              "sanitized": "true",
+              "intent": '"dispute_action"',
+              "route": '"dispute_action"',
+              "dispute_id": "null",
+              "graph_status": '"ROUTING"'
+            },
+            probe: '"Can a user dispute while stuck in a 2FA prompt?"',
+            defense: '"Yes. Priority escalation rules check for dispute/cancel keywords and immediately override the 2FA loop."',
+            highlight: ["box-classify", "box-router"], active_lines: ["line-classify-router", "line-router-dispute"], route: "dispute_action",
+            latency: "< 0.2ms", ram_usage: "2.2MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "In-Memory CPU"
+          },
+          {
+            num: 3, title: "Entity Extraction & Case Initialization", component: "extract_dispute_details()",
+            file: "app/graph/dispute_nodes.py:15-35",
+            explanation: "Regex parses transaction ID (TXN-9012) and generates a unique case tracking ID: DISP-832036E2. Initializes case status to pending_human_review.",
+            code: "tx_match = re.search(r'\\b(?:txn|tx)[-_]?[0-9a-zA-Z]+\\b', user_input, re.I)\ndispute_id = f'DISP-{uuid.uuid4().hex[:8].upper()}'",
+            stateSnapshot: {
+              "thread_id": '"session_dispute_01"',
+              "intent": '"dispute_action"',
+              "transaction_id": '"TXN-9012"',
+              "dispute_id": '"DISP-832036E2"',
+              "dispute_amount": '"$850.00"',
+              "dispute_status": '"pending_human_review"',
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"What if no transaction ID is found in the user prompt?"',
+            defense: '"The extractor defaults gracefully to TX-GENERAL, allowing the dispute to proceed to compliance triage."',
+            highlight: ["box-dispute"], active_lines: ["line-router-dispute"], route: "dispute_action",
+            latency: "0.4ms", ram_usage: "2.3MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Regex Entity Extractor"
+          },
+          {
+            num: 4, title: "Stateful Pause via interrupt()", component: "require_human_approval()",
+            file: "app/graph/dispute_nodes.py:40-55",
+            explanation: "Graph execution freezes mid-node using LangGraph interrupt(). AsyncSqliteSaver commits the 20-field state to checkpoints.db. Customer receives pending case notice and subscribes to SSE.",
+            code: "decision = interrupt({\n    'dispute_id': dispute_id,\n    'transaction_id': transaction_id,\n    'action_required': 'Compliance approval'\n})",
+            stateSnapshot: {
+              "thread_id": '"session_dispute_01"',
+              "dispute_id": '"DISP-832036E2"',
+              "transaction_id": '"TXN-9012"',
+              "dispute_status": '"suspended_interrupt"',
+              "__interrupt__": "[Interrupt(id='irq-9a2f')]",
+              "checkpointer": '"AsyncSqliteSaver WAL"',
+              "checkpoint_committed": "true",
+              "graph_status": '"SUSPENDED"'
+            },
+            probe: '"Why not handle human review via standard database polling instead of interrupt()?"',
+            defense: '"interrupt() preserves the exact execution frame, local variables, and node pointers in the checkpointer. When resumed, execution continues from the exact line without re-running earlier nodes."',
+            highlight: ["box-dispute", "box-sqlite"], active_lines: ["line-dispute-sqlite"], route: "dispute_action",
+            latency: "0.8ms", ram_usage: "2.3MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "checkpoints.db (WAL Append)"
+          },
+          {
+            num: 5, title: "Port 8001 Review & Command(resume=...)", component: "Compliance Portal (Port 8001)",
+            file: "app/api/v1/router.py:240-270",
+            explanation: "Compliance officer inspects evidence on Port 8001 and clicks Approve. Backend resumes graph using Command(resume={'approved': True, 'comments': 'Verified fraudulent charge'}).",
+            code: "await graph.ainvoke(\n    Command(resume={'approved': True, 'comments': comments}),\n    config={'configurable': {'thread_id': thread_id}}\n)",
+            stateSnapshot: {
+              "thread_id": '"session_dispute_01"',
+              "dispute_id": '"DISP-832036E2"',
+              "transaction_id": '"TXN-9012"',
+              "__interrupt__": "null (cleared)",
+              "decision": '{"approved": true, "comments": "Verified fraudulent charge"}',
+              "dispute_status": '"approved"',
+              "reviewed_by": '"compliance_officer_01"',
+              "graph_status": '"RESUMED"'
+            },
+            probe: '"What happens if the container restarts while the dispute is paused in interrupt()?"',
+            defense: '"Because we use disk-backed AsyncSqliteSaver (not MemorySaver), the checkpoint file survives reboots intact. When Port 8001 calls Command(resume=...), LangGraph re-hydrates the state from disk."',
+            highlight: ["box-port8001", "box-dispute", "box-sqlite"], active_lines: ["line-port8001-dispute", "line-dispute-sqlite"], route: "dispute_action",
+            latency: "2.4ms", ram_usage: "2.8MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "Port 8001 API -> Graph Resume"
+          },
+          {
+            num: 6, title: "Finalize Dispute & Live SSE Push Arc", component: "finalize_dispute() & SSE",
+            file: "app/api/v1/router.py:180-210",
+            explanation: "finalize_dispute routes approval, records audit in PostgreSQL disputes table, and pushes real-time event across the in-memory asyncio.Queue directly to Port 8000 customer SSE stream.",
+            code: "queue = _active_dispute_queues.get(thread_id)\nif queue:\n    queue.put_nowait({'type': 'dispute_resolved', 'status': 'approved'})",
+            stateSnapshot: {
+              "thread_id": '"session_dispute_01"',
+              "dispute_id": '"DISP-832036E2"',
+              "dispute_status": '"approved"',
+              "sse_pushed": "true",
+              "pg_record_written": "true",
+              "provisional_credit_sla": '"10 business days"',
+              "graph_status": '"COMPLETE"',
+              "checkpoint_committed": "true"
+            },
+            probe: '"Why use SSE rather than WebSockets for dispute resolution?"',
+            defense: '"Dispute decisions are unidirectional push events (server to client). SSE operates over standard HTTP/1.1 with zero reconnect complexity, native EventSource support, and minimal RAM footprint on a 1 GB instance."',
+            highlight: ["box-dispute", "box-ingress", "box-postgres"], active_lines: ["arc-sse-push", "line-dispute-sqlite"], route: "dispute_action",
+            latency: "1.1ms", ram_usage: "2.6MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "asyncio.Queue -> Port 8000 SSE"
+          }
+        ]
+      },
+      auth: {
+        name: "Account Lookup (2FA & Ledger)",
+        query: "What is my checking account balance?",
+        steps: [
+          {
+            num: 1, title: "HTTP Ingress & 2FA State Check", component: "handle_account_lookup()",
+            file: "app/graph/account_nodes.py:15-40",
+            explanation: "Customer submits account balance inquiry. The graph inspects state['is_authenticated']. Since unauthenticated, the state machine transitions to auth_step='awaiting_phone' and requests the customer's 10-digit registered phone number.",
+            code: "if not state.get('is_authenticated'):\n    return {'auth_step': 'awaiting_phone', 'answer': AUTH_PHONE_PROMPT, 'route': 'account_lookup'}",
+            stateSnapshot: {
+              "thread_id": '"session_auth_01"',
+              "user_input": '"What is my checking account balance?"',
+              "intent": '"account_lookup"',
+              "is_authenticated": "false",
+              "auth_step": '"awaiting_phone"',
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why enforce multi-step 2FA inside the graph state rather than a separate auth gateway?"',
+            defense: '"Keeping authentication state inside the graph state machine enables conversational resumption. A customer can switch intents or cancel midway, and the graph safely resets auth state without leaking cached credentials."',
+            highlight: ["box-banking"], active_lines: ["line-router-banking"], route: "account_lookup",
+            latency: "< 0.4ms", ram_usage: "2.2MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "State Check"
+          },
+          {
+            num: 2, title: "Phone Normalization & CSPRNG Token Dispatch", component: "send_otp() CSPRNG Engine",
+            file: "app/tools/bank_db.py:110-135",
+            explanation: "User submits phone '555-019-2834'. System strips non-digit characters to '5550192834'. Generates a 6-digit cryptographic token via secrets.choice (OS CSPRNG) with a 300-second validity window.",
+            code: "code = ''.join(secrets.choice('0123456789') for _ in range(6))\nself._pending_otps[clean_phone] = {'code': code, 'expires_at': time.time() + 300, 'attempts': 0, 'locked': False}",
+            stateSnapshot: {
+              "thread_id": '"session_auth_01"',
+              "intent": '"account_lookup"',
+              "is_authenticated": "false",
+              "auth_step": '"awaiting_otp"',
+              "phone_number": '"5550192834"',
+              "phone_raw_input": '"555-019-2834"',
+              "otp_length": "6",
+              "otp_ttl_seconds": "300",
+              "otp_attempts": "0",
+              "otp_locked": "false",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why use secrets.choice over standard random.randint?"',
+            defense: '"Standard Python random uses the Mersenne Twister PRNG, whose internal 624-word state can be reconstructed from 624 observed outputs. secrets uses the OS kernel CSPRNG (/dev/urandom), preventing token prediction attacks."',
+            highlight: ["box-banking"], active_lines: ["line-banking-postgres"], route: "account_lookup",
+            latency: "0.6ms", ram_usage: "2.3MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "OS CSPRNG (/dev/urandom)"
+          },
+          {
+            num: 3, title: "Row-Level Lock & Brute-Force Lockout Defense", component: "verify_otp() FOR UPDATE Lock",
+            file: "app/tools/bank_db.py:135-185",
+            explanation: "Customer submits OTP. The system applies a SELECT ... FOR UPDATE row-level lock to serialize concurrent verification attempts. The 3-attempt brute-force lockout rule is evaluated strictly BEFORE any master bypass logic.",
+            code: "async with pool.connection() as conn:\n    async with conn.transaction():\n        cur = await conn.execute('SELECT * FROM accounts WHERE phone = %s FOR UPDATE', (phone,))\n        if pending['attempts'] >= 3:\n            return False, 'Account locked: 3 failed attempts'\n        if clean_token == '123456' or totp.verify(clean_token):\n            return True, 'Verified'",
+            stateSnapshot: {
+              "thread_id": '"session_auth_01"',
+              "intent": '"account_lookup"',
+              "phone_number": '"5550192834"',
+              "auth_step": '"authenticated"',
+              "is_authenticated": "true",
+              "otp_attempts": "1",
+              "otp_locked": "false",
+              "lockout_check_passed": "true",
+              "pg_row_lock": '"SELECT ... FOR UPDATE"',
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why must the lockout check precede master bypass verification?"',
+            defense: '"If bypass checks ran first, an attacker who triggered account lockout could still guess or replay master bypass tokens to breach the account. Threat mitigation state must always take precedence over credential verification."',
+            highlight: ["box-banking", "box-postgres"], active_lines: ["line-banking-postgres"], route: "account_lookup",
+            latency: "1.8ms", ram_usage: "3.4MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "PostgreSQL (Row-Level FOR UPDATE)"
+          },
+          {
+            num: 4, title: "Relational Ledger Query via Parameterized SQL", component: "PostgresBankDatabase Query",
+            file: "app/tools/bank_db.py:45-80",
+            explanation: "Once authenticated, queries PostgreSQL accounts and transactions tables for Account ACC-1049 using parameterized queries (%s). Computes available balance ($4,250.00), holds ($120.00), and fetches the last 5 transactions.",
+            code: "cur = await conn.execute('SELECT * FROM accounts WHERE phone = %s', (clean_phone,))\nrow = await cur.fetchone()\ntxs = await conn.execute('SELECT * FROM transactions WHERE account_number = %s LIMIT 5', (row['account_number'],))",
+            stateSnapshot: {
+              "thread_id": '"session_auth_01"',
+              "is_authenticated": "true",
+              "account_number": '"ACC-1049"',
+              "balance": "4250.00",
+              "holds": "120.00",
+              "available_balance": "4130.00",
+              "overdraft_limit": "500.00",
+              "transactions_returned": "5",
+              "pg_query": '"SELECT ... WHERE phone = %s"',
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why not use SQLAlchemy ORM for these banking queries?"',
+            defense: '"SQLAlchemy 2.0 ORM unit-of-work hydration consumes 35-50 MB of resident heap memory. Using raw psycopg v3 with AsyncConnectionPool and dict_row eliminates ORM overhead, keeping our Python memory footprint under 250 MB on t3.micro."',
+            highlight: ["box-banking", "box-postgres"], active_lines: ["line-banking-postgres"], route: "account_lookup",
+            latency: "1.4ms", ram_usage: "3.1MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "PostgreSQL 16 (psycopg v3 pool)"
+          },
+          {
+            num: 5, title: "State Checkpoint Commit & Ledger Rendering", component: "AsyncSqliteSaver WAL & Ingress Delivery",
+            file: "app/graph/account_nodes.py:75-95",
+            explanation: "Account balances and formatted ledger records are rendered into the conversational response. AsyncSqliteSaver in WAL mode commits the authenticated state to checkpoints.db.",
+            code: "return {\n    'answer': f'Account: {acc.account_number}\\nBalance: ${acc.balance:,.2f}\\nAvailable: ${acc.balance - acc.holds:,.2f}',\n    'is_authenticated': True\n}",
+            stateSnapshot: {
+              "thread_id": '"session_auth_01"',
+              "is_authenticated": "true",
+              "account_number": '"ACC-1049"',
+              "balance": "4250.00",
+              "available_balance": "4130.00",
+              "answer": '"Account: ACC-1049 | Balance: $4,250.00 | Available: $4,130.00"',
+              "checkpointer": '"AsyncSqliteSaver WAL"',
+              "checkpoint_committed": "true",
+              "graph_status": '"COMPLETE"'
+            },
+            probe: '"What happens if the customer submits another balance query in the next turn?"',
+            defense: '"Because is_authenticated=True was saved to the AsyncSqliteSaver checkpoint under thread_id, the next turn recognizes the customer as already authenticated and skips the 2FA prompt."',
+            highlight: ["box-sqlite", "box-ingress"], active_lines: ["line-dispute-sqlite"], route: "account_lookup",
+            latency: "0.9ms", ram_usage: "2.5MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "checkpoints.db (Disk Commit)"
+          }
+        ]
+      },
+      escalation: {
+        name: "Customer Care (SLA Triage)",
+        query: "Please transfer me to a human support agent immediately!",
+        steps: [
+          {
+            num: 1, title: "Input Sanitization & Escalation Trigger Recognition", component: "classify_intent() Node",
+            file: "app/graph/nodes.py:80-95",
+            explanation: "Customer message passes through sanitize() and enters intent classification. Regex matches escalation triggers ('human', 'agent', 'support', 'representative'). Routes to Intent.HUMAN_REQUEST.",
+            code: "if any(w in text for w in ['human', 'agent', 'support', 'representative']):\n    return {'intent': Intent.HUMAN_REQUEST.value, 'route': 'human_request'}",
+            stateSnapshot: {
+              "thread_id": '"session_esc_01"',
+              "user_input": '"Please transfer me to a human support agent immediately!"',
+              "sanitized": "true",
+              "intent": '"human_request"',
+              "route": '"human_request"',
+              "graph_status": '"ROUTING"'
+            },
+            probe: '"Why not attempt generative deflection before escalating to human support?"',
+            defense: '"Forcing frustrated banking customers through repetitive deflection loops leads to customer churn and regulatory complaints. When clear human escalation intent is expressed, immediate triage with exact SLA wait times preserves trust."',
+            highlight: ["box-classify", "box-router"], active_lines: ["line-classify-router"], route: "human_request",
+            latency: "< 0.2ms", ram_usage: "2.1MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "In-Memory CPU"
+          },
+          {
+            num: 2, title: "Dynamic SLA Derivation & Ticket Minting", component: "handle_human_escalation()",
+            file: "app/graph/escalation_nodes.py:20-45",
+            explanation: "Evaluates multi-turn state context to assign SLA urgency: P1 Critical (< 3m) for account lockout/fraud, P2 High (< 10m) for disputed charges, or P3 Standard (< 20m) for general inquiries. Mints ticket ID TICK-20261015-XXXX.",
+            code: "ticket_id = f'TICK-{time.strftime(\"%Y%m%d\")}-{uuid.uuid4().hex[:6].upper()}'\npriority = 'P1_CRITICAL' if is_locked else ('P2_HIGH' if has_dispute else 'P3_STANDARD')",
+            stateSnapshot: {
+              "thread_id": '"session_esc_01"',
+              "intent": '"human_request"',
+              "ticket_id": '"TICK-20261015-8B41E2"',
+              "priority": '"P3_STANDARD"',
+              "estimated_wait_minutes": "20",
+              "sla_deadline": '"2026-10-15T14:47:00Z"',
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why derive SLA dynamically instead of having support staff assign priority?"',
+            defense: '"Automated priority derivation based on deterministic state (locked account, active dispute) ensures strict compliance with SLA regulatory commitments without human queuing bottlenecks."',
+            highlight: ["box-escalation"], active_lines: ["line-router-escalation"], route: "human_request",
+            latency: "0.5ms", ram_usage: "2.3MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "SLA Rule Engine"
+          },
+          {
+            num: 3, title: "Atomic Ticket Insertion into PostgreSQL", component: "PostgresBankDatabase.record_escalation()",
+            file: "app/tools/bank_db.py:90-115",
+            explanation: "Inserts escalation ticket into the PostgreSQL escalations table with columns: ticket_id, thread_id, priority, reason, status='open', and created_at. Uses parameterized SQL with transaction commit.",
+            code: "await conn.execute(\n    '''INSERT INTO escalations (ticket_id, thread_id, priority, reason, status, created_at)\n       VALUES (%s, %s, %s, %s, %s, NOW())''',\n    (ticket_id, thread_id, priority, user_input, 'open')\n)",
+            stateSnapshot: {
+              "thread_id": '"session_esc_01"',
+              "ticket_id": '"TICK-20261015-8B41E2"',
+              "priority": '"P3_STANDARD"',
+              "ticket_status": '"open"',
+              "pg_table": '"escalations"',
+              "pg_persisted": "true",
+              "staff_visible_port_8001": "true",
+              "graph_status": '"RUNNING"'
+            },
+            probe: '"Why persist escalations in PostgreSQL rather than the LangGraph checkpoint?"',
+            defense: '"LangGraph checkpoints are keyed by thread_id and intended for agent state continuation. Operational dashboards on Port 8001 require cross-customer aggregation (SELECT * FROM escalations WHERE status=open), which is impossible against opaque checkpoint blobs."',
+            highlight: ["box-escalation", "box-postgres"], active_lines: ["line-escalation-postgres"], route: "human_request",
+            latency: "1.5ms", ram_usage: "3.2MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "PostgreSQL 16 (escalations table)"
+          },
+          {
+            num: 4, title: "Compliance Dashboard Visibility & Client Delivery", component: "Port 8001 Queue & SSE Response",
+            file: "app/admin_app.py:55-80",
+            explanation: "The escalation ticket immediately appears in the Port 8001 Staff Escalation Queue. The customer receives ticket reference, priority tier, and SLA callback window, while the checkpoint commits to AsyncSqliteSaver.",
+            code: "return {\n    'answer': f'Support assigned. Ticket: {ticket_id}. Priority: {priority}. Wait: {sla_wait}.',\n    'ticket_id': ticket_id, 'escalated': True\n}",
+            stateSnapshot: {
+              "thread_id": '"session_esc_01"',
+              "ticket_id": '"TICK-20261015-8B41E2"',
+              "priority": '"P3_STANDARD"',
+              "ticket_status": '"open"',
+              "answer": '"Support assigned. Ticket: TICK-20261015-8B41E2. Wait: < 20 min."',
+              "escalated": "true",
+              "checkpointer": '"AsyncSqliteSaver WAL"',
+              "checkpoint_committed": "true",
+              "graph_status": '"COMPLETE"'
+            },
+            probe: '"How does internal staff resolve tickets on Port 8001?"',
+            defense: '"Compliance and customer support agents access GET /v1/escalations and POST /v1/escalations/{ticket_id}/resolve on Port 8001, providing complete multi-portal ticket lifecycle management."',
+            highlight: ["box-port8001", "box-escalation", "box-sqlite", "box-ingress"], active_lines: ["line-escalation-postgres", "line-dispute-sqlite"], route: "human_request",
+            latency: "1.1ms", ram_usage: "2.5MB", checkpointer: "AsyncSqliteSaver (WAL)", io_target: "checkpoints.db & Port 8001 Queue"
+          }
+        ]
+      }
+    };
+
+
+    let currentWorkflowKey = 'rag';
+    let currentStepIndex = 0;
+    let isPlaying = false;
+    let autoplayInterval = null;
+
+    function selectScenario(key) {
+      currentWorkflowKey = key;
+      currentStepIndex = 0;
+
+      // Update Toolbar buttons
+      document.querySelectorAll('.scenario-btn').forEach(btn => {
+        btn.className = 'scenario-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-medium transition hover:border-slate-600 flex items-center gap-1.5';
+      });
+      const activeBtn = document.getElementById(`btn-scenario-${key}`);
+      if (activeBtn) {
+        activeBtn.className = 'scenario-btn px-3 py-1.5 rounded-lg border border-cyan-500 bg-cyan-950/80 text-cyan-300 font-medium transition flex items-center gap-1.5 shadow-sm';
+      }
+
+      document.getElementById('active-query-text').innerText = `"${WORKFLOWS[key].query}"`;
+      buildStepsRibbon();
+      renderCurrentStep();
+    }
+
+    function buildStepsRibbon() {
+      const ribbon = document.getElementById('steps-ribbon');
+      ribbon.innerHTML = '';
+      const wf = WORKFLOWS[currentWorkflowKey];
+
+      wf.steps.forEach((step, idx) => {
+        const btn = document.createElement('button');
+        btn.onclick = () => { currentStepIndex = idx; renderCurrentStep(); };
+        btn.id = `ribbon-step-${idx}`;
+        btn.className = idx === 0 
+          ? 'px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/60 text-cyan-300 font-medium text-xs whitespace-nowrap flex items-center gap-1.5'
+          : 'px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-slate-200 text-xs whitespace-nowrap flex items-center gap-1.5';
+        btn.innerHTML = `<span class="w-4 h-4 rounded-full bg-slate-700 text-white font-bold text-[10px] flex items-center justify-center">${step.num}</span> <span>${step.title}</span>`;
+        ribbon.appendChild(btn);
+      });
+    }
+
+    function renderCurrentStep() {
+      const wf = WORKFLOWS[currentWorkflowKey];
+      const step = wf.steps[currentStepIndex];
+      const prevStep = currentStepIndex > 0 ? wf.steps[currentStepIndex - 1] : null;
+
+      // ── Ribbon ──────────────────────────────────────────────────────
+      wf.steps.forEach((_, idx) => {
+        const el = document.getElementById(`ribbon-step-${idx}`);
+        if (el) {
+          if (idx === currentStepIndex) {
+            el.className = 'px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/60 text-cyan-300 font-medium text-xs whitespace-nowrap flex items-center gap-1.5';
+            el.querySelector('span:first-child').className = 'w-4 h-4 rounded-full bg-cyan-500 text-black font-bold text-[10px] flex items-center justify-center';
+          } else if (idx < currentStepIndex) {
+            el.className = 'px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/40 text-emerald-600 text-xs whitespace-nowrap flex items-center gap-1.5';
+            el.querySelector('span:first-child').className = 'w-4 h-4 rounded-full bg-emerald-700 text-white font-bold text-[10px] flex items-center justify-center';
+          } else {
+            el.className = 'px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-slate-200 text-xs whitespace-nowrap flex items-center gap-1.5';
+            el.querySelector('span:first-child').className = 'w-4 h-4 rounded-full bg-slate-700 text-white font-bold text-[10px] flex items-center justify-center';
+          }
+        }
+      });
+
+      // ── Left panel header ─────────────────────────────────────────
+      document.getElementById('stage-number').innerText = step.num;
+      document.getElementById('step-name').innerText = step.title;
+      document.getElementById('step-component').innerText = step.component;
+
+      // ── Progress bar & Full Explanation ──────────────────────────
+      const pct = Math.round(((currentStepIndex + 1) / wf.steps.length) * 100);
+      document.getElementById('step-progress-bar').style.width = pct + '%';
+      document.getElementById('step-number-tag').innerText = `Step ${step.num} of ${wf.steps.length}`;
+      document.getElementById('step-headline').innerText = step.title;
+      document.getElementById('step-file-label').innerText = step.file;
+      const compBadge = document.getElementById('step-component-badge');
+      if (compBadge) compBadge.innerText = step.component;
+      const explEl = document.getElementById('step-explanation');
+      if (explEl) explEl.innerText = step.explanation;
+
+      // ── Dynamic Telemetry Strip ───────────────────────────────────
+      const routeEl = document.getElementById('live-route');
+      if (routeEl) routeEl.innerText = step.route;
+      const routeFooterEl = document.getElementById('live-route-footer');
+      if (routeFooterEl) routeFooterEl.innerText = step.route;
+
+      const checkpointerEl = document.getElementById('live-checkpointer');
+      if (checkpointerEl) checkpointerEl.innerText = step.checkpointer || 'AsyncSqliteSaver (WAL)';
+
+      const latencyEl = document.getElementById('live-latency');
+      if (latencyEl) {
+        latencyEl.innerText = `${step.latency || '< 0.4ms'} / ${step.ram_usage || '2.1MB'}`;
+      }
+
+      // ── Code card ─────────────────────────────────────────────────
+      const codeEl = document.getElementById('step-code');
+      codeEl.innerText = step.code;
+      codeEl.classList.remove('code-block-animate');
+      void codeEl.offsetWidth;
+      codeEl.classList.add('code-block-animate');
+
+      // ── Interview Q&A ─────────────────────────────────────────────
+      document.getElementById('interview-probe').innerText = step.probe;
+      document.getElementById('interview-defense').innerText = step.defense;
+
+      // ── LIVE STATE INSPECTOR ──────────────────────────────────────
+      const inspector = document.getElementById('state-inspector');
+      const prevSnap = prevStep ? prevStep.stateSnapshot : {};
+      const currSnap = step.stateSnapshot || {};
+      const allKeys = [...new Set([...Object.keys(prevSnap), ...Object.keys(currSnap)])];
+
+      inspector.innerHTML = '';
+      allKeys.forEach((key, i) => {
+        const isNew = !(key in prevSnap) && (key in currSnap);
+        const isChanged = (key in prevSnap) && (key in currSnap) && prevSnap[key] !== currSnap[key];
+        const isRemoved = (key in prevSnap) && !(key in currSnap);
+        const val = currSnap[key] !== undefined ? currSnap[key] : prevSnap[key];
+
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-2 rounded-lg px-2 py-1.5 transition-all';
+        if (isRemoved) {
+          row.className += ' state-field-unchanged line-through opacity-20';
+        } else if (isNew) {
+          row.className += ' state-field-new';
+          row.style.animationDelay = (i * 50) + 'ms';
+        } else if (isChanged) {
+          row.className += ' state-field-changed';
+          row.style.animationDelay = (i * 35) + 'ms';
+        } else {
+          row.className += ' state-field-unchanged';
+        }
+
+        const badge = document.createElement('span');
+        badge.className = 'shrink-0 text-[9px] font-bold px-1 py-0.5 rounded mt-0.5 ' + (
+          isNew     ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' :
+          isChanged ? 'bg-amber-950 text-amber-400 border border-amber-800' :
+          isRemoved ? 'bg-rose-950 text-rose-600 border border-rose-900' :
+                      'bg-slate-800 text-slate-600 border border-slate-700'
+        );
+        badge.innerText = isNew ? 'NEW' : isChanged ? 'CHG' : isRemoved ? 'DEL' : '   ';
+
+        const keySpan = document.createElement('span');
+        keySpan.className = 'text-slate-400 shrink-0';
+        keySpan.innerText = key + ':';
+
+        const valSpan = document.createElement('span');
+        valSpan.className = 'break-all ' + (
+          isNew     ? 'text-emerald-300 font-semibold' :
+          isChanged ? 'text-amber-300 font-semibold' :
+          isRemoved ? 'text-rose-500 line-through' :
+                      'text-slate-500'
+        );
+
+        if (isChanged && prevSnap[key] !== undefined) {
+          valSpan.innerHTML = `<span class="line-through opacity-40 text-slate-600">${escHtml(String(prevSnap[key]))}</span> <span>→ ${escHtml(String(val))}</span>`;
+        } else {
+          valSpan.innerText = String(val);
+        }
+
+        row.appendChild(badge);
+        row.appendChild(keySpan);
+        row.appendChild(valSpan);
+        inspector.appendChild(row);
+      });
+
+      if (allKeys.length === 0) {
+        inspector.innerHTML = '<div class="text-slate-600 text-[11px] p-2 italic">No state fields yet — state initializes at ingress.</div>';
+      }
+
+      // ── SVG node glow ─────────────────────────────────────────────
+      const allBoxIds = ['box-ingress','box-sanitize','box-classify','box-router','box-port8001','box-rag','box-dispute','box-banking','box-escalation','box-sqlite','box-postgres'];
+      allBoxIds.forEach(id => {
+        const g = document.getElementById(id);
+        if (g) {
+          const r = g.querySelector('rect');
+          if (r) { r.setAttribute('stroke','#475569'); r.setAttribute('stroke-width','1.5'); r.classList.remove('active-step-glow'); }
+        }
+      });
+      step.highlight.forEach(id => {
+        const g = document.getElementById(id);
+        if (g) {
+          const r = g.querySelector('rect');
+          if (r) { r.setAttribute('stroke','#38bdf8'); r.setAttribute('stroke-width','2.5'); r.classList.add('active-step-glow'); }
+        }
+      });
+
+      // ── Animated flow lines & SSE Push Arc ─────────────────────────
+      const allLineIds = [
+        'line-ingress-sanitize','line-sanitize-classify','line-classify-router',
+        'line-router-rag','line-router-dispute','line-router-banking','line-router-escalation',
+        'line-dispute-sqlite','line-banking-postgres','line-escalation-postgres','line-port8001-dispute',
+        'arc-sse-push'
+      ];
+      allLineIds.forEach(id => {
+        const p = document.getElementById(id);
+        if (p) {
+          p.classList.remove('flow-line-active');
+          if (id === 'arc-sse-push') {
+            p.setAttribute('stroke', '#1e293b');
+            p.setAttribute('stroke-width', '1.5');
+          } else {
+            p.setAttribute('stroke', '#334155');
+            p.setAttribute('stroke-width', '2');
+          }
+        }
+      });
+      step.active_lines.forEach(id => {
+        const p = document.getElementById(id);
+        if (p) {
+          p.classList.add('flow-line-active');
+          if (id === 'arc-sse-push') {
+            p.setAttribute('stroke', '#10b981');
+            p.setAttribute('stroke-width', '3');
+          }
+        }
+      });
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function nextStep() {
+      const wf = WORKFLOWS[currentWorkflowKey];
+      currentStepIndex = (currentStepIndex + 1) % wf.steps.length;
+      renderCurrentStep();
+    }
+
+    function prevStep() {
+      const wf = WORKFLOWS[currentWorkflowKey];
+      currentStepIndex = (currentStepIndex - 1 + wf.steps.length) % wf.steps.length;
+      renderCurrentStep();
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const playIcon = document.getElementById('play-icon');
+      const playText = document.getElementById('play-text');
+      const playBtn = document.getElementById('play-btn');
+
+      if (isPlaying) {
+        playIcon.className = 'fa-solid fa-pause';
+        playText.innerText = 'Pause';
+        playBtn.className = 'px-3.5 py-1 text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white rounded transition flex items-center gap-1.5 shadow';
+        autoplayInterval = setInterval(() => {
+          nextStep();
+        }, 5500);
+      } else {
+        playIcon.className = 'fa-solid fa-play';
+        playText.innerText = 'Autoplay';
+        playBtn.className = 'px-3.5 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded transition flex items-center gap-1.5 shadow';
+        clearInterval(autoplayInterval);
+      }
+    }
+
+    // =================================================================
+    // Native Browser Video Recorder (MediaRecorder API with Codec Fallbacks)
+    // =================================================================
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    async function toggleRecordVideo() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        await startRecording();
+      }
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: { ideal: 30, max: 60 } },
+          audio: false
+        });
+
+        recordedChunks = [];
+        
+        // Codec Fallback Chain (Safari / Chrome / Firefox compatibility)
+        const candidateTypes = [
+          'video/webm; codecs=vp9',
+          'video/webm; codecs=vp8',
+          'video/webm',
+          'video/mp4; codecs=avc1',
+          'video/mp4'
+        ];
+        let chosenMime = candidateTypes.find(t => {
+          try { return MediaRecorder.isTypeSupported(t); } catch(e) { return false; }
+        }) || '';
+
+        const options = chosenMime ? { mimeType: chosenMime } : {};
+        mediaRecorder = new MediaRecorder(stream, options);
+
+        mediaRecorder.ondataavailable = function(e) {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = function() {
+          const extension = (chosenMime && chosenMime.includes('mp4')) ? 'mp4' : 'webm';
+          const blob = new Blob(recordedChunks, { type: chosenMime || 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `PolicyDesk-Lifecycle-${currentWorkflowKey}-${Date.now()}.${extension}`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+
+          setRecordUI(false);
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+        setRecordUI(true);
+
+        if (!isPlaying) togglePlay();
+
+      } catch (err) {
+        console.warn('Recording cancelled or screen-capture permission denied:', err);
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      setRecordUI(false);
+    }
+
+    function setRecordUI(rec) {
+      isRecording = rec;
+      const recDot = document.getElementById('rec-dot');
+      const recIcon = document.getElementById('rec-icon');
+      const recText = document.getElementById('rec-text');
+      const recBtn = document.getElementById('record-btn');
+
+      if (rec) {
+        recDot.style.display = 'inline-block';
+        recIcon.style.display = 'none';
+        recText.innerText = 'Stop Recording';
+        recBtn.className = 'text-xs bg-red-700 hover:bg-red-600 text-white font-medium px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 shadow animate-pulse';
+      } else {
+        recDot.style.display = 'none';
+        recIcon.style.display = 'inline-block';
+        recText.innerText = 'Record Video';
+        recBtn.className = 'text-xs bg-rose-600 hover:bg-rose-500 text-white font-medium px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 shadow shadow-rose-900/40';
+      }
+    }
+
+    // =================================================================
+    // Interview Master Guide Modal Logic
+    // =================================================================
+    function toggleCheatSheetModal(show) {
+      const modal = document.getElementById('cheatsheet-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function switchCheatSheetTab(tabId) {
+      const tabs = ['lifecycle', 'invariants', 'numbers', 'pitches'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const content = document.getElementById(`tab-content-${t}`);
+        if (t === tabId) {
+          btn.className = 'px-3.5 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500 text-cyan-300 font-medium transition flex items-center gap-1.5';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium transition flex items-center gap-1.5';
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    // =================================================================
+    // Keyboard Navigation (Arrow keys, Space, 1-4 shortcuts)
+    // =================================================================
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('cheatsheet-modal');
+      const modalOpen = modal && !modal.classList.contains('hidden');
+
+      if (e.key === 'Escape') {
+        if (modalOpen) toggleCheatSheetModal(false);
+        return;
+      }
+
+      if (modalOpen) return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextStep();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevStep();
+      } else if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.key === '1') {
+        selectScenario('rag');
+      } else if (e.key === '2') {
+        selectScenario('dispute');
+      } else if (e.key === '3') {
+        selectScenario('auth');
+      } else if (e.key === '4') {
+        selectScenario('escalation');
+      }
+    });
+
+    // Initialize default scenario
+    selectScenario('rag');
+  </script>
+</body>
+</html>

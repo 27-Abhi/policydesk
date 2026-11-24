@@ -1,0 +1,205 @@
+{
+  "timestamp": "2026-10-26T08:48:35Z",
+  "framework": "DeepEval",
+  "eval_model": "gemini-3.1-flash-lite",
+  "total_test_cases": 10,
+  "overall_pass_rate_pct": 80.0,
+  "metrics_summary": {
+    "average_faithfulness": 1.0,
+    "average_answer_relevancy": 0.8833,
+    "faithfulness_pass_rate": 100.0,
+    "relevancy_pass_rate": 80.0
+  },
+  "results": [
+    {
+      "id": "q001",
+      "category": "account_types",
+      "query": "What types of deposit accounts does the bank offer?",
+      "retrieval_score": 0.5447201249668604,
+      "retrieval_context": "1.TYPES OF DEPOSIT ACCOUNTS \nWhile various deposit products offered by the Bank are assigned different names, the deposit products \ncan be categorized broadly into the following types. Definition of major deposits schemes are as under: \na. \"Demand Deposits\" means a deposit received by the Bank which is withdrawable on demand.\n\ni) \u201cSavings deposit\u201d means a form of interest bearing demand deposit which is a deposit \naccount whether designated as \u201cSavings Account\u201d, \u201cSavings Bank Account\u201d, \u201cSavings \nDeposit Account\u201d, \u201cBasic Savings Bank Deposit Account (BSBDA)\u201d or other account by \nwhatever name called which is subject to the restrictions as to the number of withdrawals \nas also the amounts of withdrawals permitted by the bank during any specified period; \nSavings accounts opened for Non -Individual entities refers to a form of Demand deposit  \naccount maintained by entities other than individuals, wherein withdrawals are allowed \nany number of times depending up on the balance in the account.",
+      "actual_output": "The bank offers \"Demand Deposits,\" which include \"Savings deposits\" (such as Savings Accounts, Savings Bank Accounts, Savings Deposit Accounts, and Basic Savings Bank Deposit Accounts) and Savings accounts for Non-Individual entities.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response is perfectly aligned with the input, providing a clear and accurate overview of the bank's deposit account offerings. Great job!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q002",
+      "category": "account_types",
+      "query": "What is a Basic Savings Bank Deposit Account and what are its features?",
+      "retrieval_score": 0.42560162000774815,
+      "retrieval_context": "Details about the product \noffering are available with all the branches / website. (vii) Basic Savings Bank Deposit Account \nThe Bank offers a BSBDA Account with all the basic banking facilities with Zero Initial Pay-In and Zero \nbalance account. Details about the product offering are available with all the branches / website. (viii) Bulk Term Deposits  \n \nBulk Deposit\u201d refers to Single  Rupee term deposits of \u20b9 3 crores and above or such amount as \namended by RBI from time to time.\n\n3.KEY FEATURES ON OPERATION OF DIFFERENT TYPES OF ACCOUNTS  \n(i) Operation of Joint Account \na. The Joint Account opened by more than one individual can be operated by single individual or \nby more than one individual as either  or survivor, Former or Survivor, anyone or survivor or \njointly. The mandate for operating the account can be modified with the consent of all account \nholders. b.",
+      "actual_output": "A Basic Savings Bank Deposit Account (BSBDA) is an account offered by the Bank that provides all basic banking facilities. Its features include a Zero Initial Pay-In and a Zero balance requirement. Further details regarding the product offering are available at all branches or on the website.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response provided a comprehensive and accurate explanation of a Basic Savings Bank Deposit Account and its features without including any extraneous or irrelevant information. Great job!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q003",
+      "category": "account_types",
+      "query": "What is the minimum deposit amount for a bulk term deposit?",
+      "retrieval_score": 0.4792686358174992,
+      "retrieval_context": "Details about the product \noffering are available with all the branches / website. (vii) Basic Savings Bank Deposit Account \nThe Bank offers a BSBDA Account with all the basic banking facilities with Zero Initial Pay-In and Zero \nbalance account. Details about the product offering are available with all the branches / website. (viii) Bulk Term Deposits  \n \nBulk Deposit\u201d refers to Single  Rupee term deposits of \u20b9 3 crores and above or such amount as \namended by RBI from time to time.\n\n3.KEY FEATURES ON OPERATION OF DIFFERENT TYPES OF ACCOUNTS  \n(i) Operation of Joint Account \na. The Joint Account opened by more than one individual can be operated by single individual or \nby more than one individual as either  or survivor, Former or Survivor, anyone or survivor or \njointly. The mandate for operating the account can be modified with the consent of all account \nholders. b.",
+      "actual_output": "The minimum deposit amount for a bulk term deposit is \u20b93 crores or such amount as amended by the RBI from time to time.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response is perfectly accurate and directly addresses the inquiry without any extraneous information. Great job providing a clear and concise answer!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q004",
+      "category": "account_types",
+      "query": "Can a current account earn interest?",
+      "retrieval_score": 0.3321214733735952,
+      "retrieval_context": "This account earn \ninterest and are intended for eligible organisations permitted to open such accounts \nunder RBI Master direction on interest rates on deposit. ii) \"Current Account\" means a form of non -interest-bearing demand deposit wherefrom \nwithdrawals are allowed any number of times depending upon the balance in the account \nor up to a particular agreed amount and will also include other deposit accounts which \nare neither Savings Deposit nor Term Deposit.\n\n4 \nComprehensive Deposit Policy June 2025 \nb. \"Term Deposits\" means an interest-bearing deposit received by the Bank for a fixed period \nand shall also include deposits such as Recurring /Reinvestment deposits. 2. ACCOUNT OPENING AND OPERATION OF DEPOSIT ACCOUNTS  \n(i)Account Opening and Operation of Various Deposit Accounts \na.",
+      "actual_output": "No. According to the policy, a \"Current Account\" is defined as a form of non-interest-bearing demand deposit.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response is perfectly accurate and directly addresses the inquiry without any extraneous information. Great job providing a clear and concise answer!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q005",
+      "category": "account_opening",
+      "query": "Who can open a savings bank account?",
+      "retrieval_score": 0.5129746476940655,
+      "retrieval_context": "i) \u201cSavings deposit\u201d means a form of interest bearing demand deposit which is a deposit \naccount whether designated as \u201cSavings Account\u201d, \u201cSavings Bank Account\u201d, \u201cSavings \nDeposit Account\u201d, \u201cBasic Savings Bank Deposit Account (BSBDA)\u201d or other account by \nwhatever name called which is subject to the restrictions as to the number of withdrawals \nas also the amounts of withdrawals permitted by the bank during any specified period; \nSavings accounts opened for Non -Individual entities refers to a form of Demand deposit  \naccount maintained by entities other than individuals, wherein withdrawals are allowed \nany number of times depending up on the balance in the account.\n\nThis account earn \ninterest and are intended for eligible organisations permitted to open such accounts \nunder RBI Master direction on interest rates on deposit. ii) \"Current Account\" means a form of non -interest-bearing demand deposit wherefrom \nwithdrawals are allowed any number of times depending upon the balance in the account \nor up to a particular agreed amount and will also include other deposit accounts which \nare neither Savings Deposit nor Term Deposit.",
+      "actual_output": "Based on the provided policy, savings accounts can be opened by individuals and non-individual entities (eligible organizations permitted to open such accounts under RBI Master direction on interest rates on deposit).",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response is perfectly accurate and directly addresses the inquiry with no extraneous information. Great job providing a clear and concise answer!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q006",
+      "category": "account_opening",
+      "query": "What KYC documents are required to open a bank account?",
+      "retrieval_score": 0.3517458367921226,
+      "retrieval_context": "The Bank before opening any deposit account will carry out due diligence as required under \n\"Know Your Customer\" (KYC) guidelines issued by RBI and such other norms or procedures \nadopted by the Bank. b. The account opening forms and other material would be made available to the prospective \ndepositor by the Bank.\n\nThe same will contain details of information to be furnished and \ndocuments to be produced for verification and for record, it is expected of the Bank official \nopening the account, to explain the procedural formalities and provide necessary clarifications \nsought by the prospective depositor when he approaches opening a deposit account. Customers \nalso have the option to open accounts digitally. c.",
+      "actual_output": "The provided policy does not list specific KYC documents. It states that the Bank will carry out due diligence as required under RBI \"Know Your Customer\" (KYC) guidelines and that the account opening forms will contain details of the information to be furnished and the documents to be produced for verification.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 0.5,
+        "passed": false,
+        "reason": "The score is 0.50 because the response acknowledges the existence of KYC guidelines without providing the specific list of required documents requested by the user, focusing instead on procedural generalities."
+      },
+      "overall_passed": false
+    },
+    {
+      "id": "q007",
+      "category": "account_opening",
+      "query": "Can I open a bank account online or do I need to visit the branch?",
+      "retrieval_score": 0.1407439389972704,
+      "retrieval_context": "The term deposit must run for a minimum tenor of 7 days from the date of value date in order to earn \nany interest. Premature withdrawals before this minimum tenor will result in zero interest payment to \nthe customer. Sweep-in / Partial withdrawal may not be allowed for certain bulk deposits by bank. Deposits accounts transferred from one bank branch to another bank branch on account of takeover \nof bank branches in rural and semi-urban centers will adhere to the following conditions: \na.\n\nDeposit accounts will be deemed to be transferred to the new bank and will continue to be  \ngoverned by the terms of contract agreed to, between the customer and the bank branch \nthat is being taken over. b. The same rate of interest will be payable till maturity on such transferred deposits, as was \npayable at the time of takeover of the branch.",
+      "actual_output": "The provided policy context does not contain information regarding whether you can open a bank account online or if you are required to visit a branch.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because your response was perfectly accurate, concise, and directly addressed the user's question without any unnecessary information. Great job!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q008",
+      "category": "account_opening",
+      "query": "What entities are eligible to open a current account?",
+      "retrieval_score": 0.2469361894471765,
+      "retrieval_context": "This account earn \ninterest and are intended for eligible organisations permitted to open such accounts \nunder RBI Master direction on interest rates on deposit. ii) \"Current Account\" means a form of non -interest-bearing demand deposit wherefrom \nwithdrawals are allowed any number of times depending upon the balance in the account \nor up to a particular agreed amount and will also include other deposit accounts which \nare neither Savings Deposit nor Term Deposit.\n\n4 \nComprehensive Deposit Policy June 2025 \nb. \"Term Deposits\" means an interest-bearing deposit received by the Bank for a fixed period \nand shall also include deposits such as Recurring /Reinvestment deposits. 2. ACCOUNT OPENING AND OPERATION OF DEPOSIT ACCOUNTS  \n(i)Account Opening and Operation of Various Deposit Accounts \na.",
+      "actual_output": "According to bank policy:\n\nThis account earn \ninterest and are intended for eligible organisations permitted to open such accounts \nunder RBI Master direction on interest rates on deposit. ii) \"Current Account\" means a form of non -interest-bearing demand deposit wherefrom \nwithdrawals are allowed any number of times depending upon the balance in the account \nor up to a particular agreed amount and will also include other deposit accounts which \nare neither Savings Deposit nor Term Deposit.\n\n4 \nComprehensive Deposit Policy June 2025 \nb. \"Term Deposits\" means an interest-bearing deposit received by the Bank for a fixed period \nand shall also include deposits such as Recurring /Reinvestment deposits. 2. ACCOUNT OPENING AND OPERATION OF DEPOSIT ACCOUNTS  \n(i)Account Opening and Operation of Various Deposit Accounts \na.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 0.3333333333333333,
+        "passed": false,
+        "reason": "The score is 0.33 because the output is heavily cluttered with irrelevant technical definitions, metadata, and descriptions of unrelated account types, which obscures the actual eligibility criteria requested."
+      },
+      "overall_passed": false
+    },
+    {
+      "id": "q009",
+      "category": "account_maintenance",
+      "query": "What happens if I fail to maintain the minimum balance in my savings account?",
+      "retrieval_score": 0.5322866412243121,
+      "retrieval_context": "Any change in service & fees \nwill be communicated one month in advance to all customers before effecting the change. All customer s will be  communicated regarding the balance requirement up -front at the time of \nopening an account with the bank. If the customer fails to maintain the required minimum balance in \nhis/her savings account, the bank notifies the same to customer.\n\nThe communication states that in \nthe event of the minimum balance not being restored in the account within the next 30 days from the \ndate of notice, penal charges will be levied. In case the balance is restored within given notice period, \nno charges are levied, else the bank debits the applicable charges from the customer's account. AMB \ncharges defined by the bank are directly proportionate to the extent of shortfall in the saving account.",
+      "actual_output": "If you fail to maintain the required minimum balance in your savings account, the bank will notify you. You then have 30 days from the date of that notice to restore the balance.\n\n*   **If you restore the balance within the 30-day notice period:** No charges will be levied.\n*   **If you fail to restore the balance within the 30-day notice period:** The bank will debit applicable penal charges from your account. These charges are directly proportionate to the extent of the shortfall.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response directly and accurately addresses the consequences of failing to maintain a minimum balance; great job providing a clear and helpful answer!"
+      },
+      "overall_passed": true
+    },
+    {
+      "id": "q010",
+      "category": "service_charges",
+      "query": "How far in advance will the bank notify me before changing service fees?",
+      "retrieval_score": 0.39730808365379167,
+      "retrieval_context": "Any change in service & fees \nwill be communicated one month in advance to all customers before effecting the change. All customer s will be  communicated regarding the balance requirement up -front at the time of \nopening an account with the bank. If the customer fails to maintain the required minimum balance in \nhis/her savings account, the bank notifies the same to customer.\n\nThe communication states that in \nthe event of the minimum balance not being restored in the account within the next 30 days from the \ndate of notice, penal charges will be levied. In case the balance is restored within given notice period, \nno charges are levied, else the bank debits the applicable charges from the customer's account. AMB \ncharges defined by the bank are directly proportionate to the extent of shortfall in the saving account.",
+      "actual_output": "The bank will communicate any change in service and fees one month in advance.",
+      "faithfulness": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the actual output is perfectly aligned with the retrieval context\u2014fantastic work!"
+      },
+      "answer_relevancy": {
+        "score": 1.0,
+        "passed": true,
+        "reason": "The score is 1.00 because the response is perfectly accurate and directly addresses the inquiry without any extraneous information. Great job providing a clear and concise answer!"
+      },
+      "overall_passed": true
+    }
+  ]
+}

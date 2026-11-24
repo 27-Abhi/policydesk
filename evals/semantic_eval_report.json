@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-10-23T13:53:04Z",
+  "total_evaluated": 3,
+  "llm_provider": "OpenAIClient",
+  "metrics": {
+    "average_faithfulness": 1.0,
+    "average_answer_relevance": 1.0,
+    "average_context_precision": 1.0
+  },
+  "results": [
+    {
+      "id": "q01",
+      "category": "wire_transfers",
+      "query": "What is the fee for an international wire transfer?",
+      "retrieval_score": 0.5913033216007162,
+      "generated_answer": "The fee for an international wire transfer is $45.",
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "context_precision": 1.0,
+      "reasoning": "The generated answer is fully supported by the retrieved context, directly addresses the user's question about the international wire transfer fee without extra filler, and the context contains the exact necessary fact.",
+      "gen_time_sec": 2.83,
+      "judge_time_sec": 4.96
+    },
+    {
+      "id": "q02",
+      "category": "wire_transfers",
+      "query": "How much does a domestic wire transfer cost?",
+      "retrieval_score": 0.2886380181395895,
+      "generated_answer": "A domestic wire transfer costs $25.",
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "context_precision": 1.0,
+      "reasoning": "The generated answer accurately states the domestic wire transfer fee based directly on the retrieved context, contains no hallucinations, directly addresses the user's question without filler, and the context provides the exact necessary facts.",
+      "gen_time_sec": 9.51,
+      "judge_time_sec": 11.78
+    },
+    {
+      "id": "q03",
+      "category": "wire_transfers",
+      "query": "What is the daily cutoff time for wire transfers?",
+      "retrieval_score": 0.4570119424913743,
+      "generated_answer": "The daily cutoff time for submitting wire transfers is 4:00 PM EST.",
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "context_precision": 1.0,
+      "reasoning": "The generated answer directly and accurately states the daily cutoff time for wire transfers using only facts from the retrieved context, with no hallucinations or superfluous filler.",
+      "gen_time_sec": 11.52,
+      "judge_time_sec": 1.47
+    }
+  ]
+}

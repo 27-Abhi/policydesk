@@ -69,10 +69,16 @@ class ChatDebugResponse(BaseModel):
     route: Optional[str] = None
     is_relevant: Optional[bool] = None
     relevance_score: Optional[float] = None
-    retrieved_docs: list[str] = []
-    reranked_docs: list[str] = []
+    retrieval_attempts: int = 0
+    generation_attempts: int = 0
+    rewritten_query: Optional[str] = None
+    grounded: Optional[bool] = None
+    retrieved_docs: list[str] = Field(default_factory=list)
+    reranked_docs: list[str] = Field(default_factory=list)
+    citations: list[dict[str, Any]] = Field(default_factory=list)
+    metrics: dict[str, Any] = Field(default_factory=dict)
     answer: Optional[str] = None
-    errors: list[str] = []
+    errors: list[str] = Field(default_factory=list)
 
 
 class DisputeReviewRequest(BaseModel):
@@ -118,5 +124,3 @@ class PolicyListResponse(BaseModel):
     total_parents: int
     total_children: int
     policies: list[PolicyDocumentSummary]
-
-

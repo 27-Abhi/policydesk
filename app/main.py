@@ -4,10 +4,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.router import api_v1_router
+from app.api.v1.router import api_v1_router, get_allowed_origins
 from app.graph.graph import build_graph
 
-# Load environment variables from root .env if present
 env_file = Path(__file__).resolve().parent.parent / ".env"
 if env_file.exists():
     load_dotenv(dotenv_path=env_file)
@@ -17,19 +16,17 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
-
-
 app = FastAPI(
     title="PolicyDesk API",
-    description="Escalation-aware fintech policy support agent with LangGraph RAG",
+    description="Escalation-aware fintech policy support agent with LangGraph Agentic RAG",
     version="0.1.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=get_allowed_origins(),
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 

@@ -1,8 +1,18 @@
+"""Hybrid parent-child vector store combining Okapi BM25, dense semantic vectors, and RRF fusion."""
+
 import difflib
 import math
+import os
 import re
 from collections import Counter
 from typing import Any, Optional
+
+from app.rag.embeddings import (
+    BaseEmbeddingProvider,
+    SqliteVecIndex,
+    cosine_similarity_dense,
+    get_embedding_provider,
+)
 
 STOPWORDS = frozenset({
     "a", "about", "above", "after", "again", "against", "ain", "all", "am", "an", "and",
@@ -22,6 +32,54 @@ STOPWORDS = frozenset({
     "your", "yours", "yourself", "yourselves",
 })
 
+# Query-side domain expansions mapping colloquial user terms to formal policy terminology
+_SYNONYM_EXPANSIONS: dict[str, tuple[str, ...]] = {
+    "online": ("digital", "digitally"),
+    "fd": ("term", "deposit"),
+    "fds": ("term", "deposit"),
+    "person": ("individual",),
+    "people": ("individual",),
+    "18": ("majority", "major"),
+    "turn": ("attaining", "majority"),
+    "early": ("premature",),
+    "break": ("premature", "withdrawal"),
+    "dormant": ("inoperative",),
+    "inoperative": ("dormant",),
+    "activity": ("inoperative", "unclaimed", "deaf"),
+    "transaction": ("operation", "activity"),
+    "die": ("deceased", "death"),
+    "dies": ("deceased", "death"),
+    "dead": ("deceased", "death"),
+    "avoid": ("exemption", "form", "15g"),
+    "split": ("bifurcate", "multiple"),
+}
+
+# Explicit non-deposit financial product markers that should fail relevance gating
+_NON_DEPOSIT_PRODUCT_PHRASES: tuple[str, ...] = (
+    "home loan",
+    "car loan",
+    "personal loan",
+    "education loan",
+    "income tax return",
+    "file income tax",
+    "life insurance",
+    "health insurance",
+    "demat account",
+    "stock trading",
+    "stock market",
+    "repo rate",
+    "credit card",
+    "cashback reward",
+    "cryptocurrency",
+    "passport",
+    "chocolate cake",
+    "best mutual funds",
+)
+
+_SECTION_RE = re.compile(
+    r"(?:^|\n)\s*((?:\d{1,2}\.\s+[A-Z][A-Z0-9\s,&/\-()]{3,80})|(?:\([ivx]+\)\s+[A-Z][A-Za-z0-9\s,&/\-()]{3,80}))"
+)
+
 
 def _stem(word: str) -> str:
     for sfx, cut, min_len in (("sses", 2, 4), ("ies", 3, 3), ("es", 2, 3), ("ing", 3, 4), ("ed", 2, 3)):
@@ -36,8 +94,13 @@ def _stem(word: str) -> str:
 
 def _tokenize(text: str) -> list[str]:
     words = re.findall(r"\b[a-zA-Z0-9_]+\b", text.lower())
-    return [_stem(w) for w in words if w not in STOPWORDS]
+    return [_stem(w) for w in words if w not in STOPWORDS and len(w) > 1]
 
+
+def _extract_bigrams(tokens: list[str]) -> list[str]:
+    if len(tokens) < 2:
+        return []
+    return [f"{tokens[i]}_{tokens[i + 1]}" for i in range(len(tokens) - 1)]
 
 
 def _cosine_similarity(vec1: dict[str, float], vec2: dict[str, float]) -> float:
@@ -54,14 +117,50 @@ def _cosine_similarity(vec1: dict[str, float], vec2: dict[str, float]) -> float:
     return dot_product / (norm1 * norm2)
 
 
-class ParentChildVectorStore:
-    """In-memory vector store mapping searchable child chunks to full parent chunks."""
+def _has_non_deposit_product_mismatch(
+    query_lower: str,
+    df: Optional[Counter] = None,
+    bigram_df: Optional[Counter] = None,
+) -> bool:
+    for phrase in _NON_DEPOSIT_PRODUCT_PHRASES:
+        if phrase not in query_lower:
+            continue
+        tokens = _tokenize(phrase)
+        if not tokens:
+            return True
+        if len(tokens) == 1:
+            if df is not None and tokens[0] in df:
+                continue
+            return True
+        bigrams = _extract_bigrams(tokens)
+        if bigram_df is not None and bigrams and all(bg in bigram_df for bg in bigrams):
+            continue
+        return True
+    return False
 
-    def __init__(self) -> None:
+
+class ParentChildVectorStore:
+    """Hybrid parent-child store using Okapi BM25, dense semantic embeddings, sqlite-vec, and RRF."""
+
+    def __init__(
+        self,
+        embedding_provider: Optional[BaseEmbeddingProvider] = None,
+        vec_db_path: str = ":memory:",
+    ) -> None:
         self.parents: dict[str, dict[str, Any]] = {}
         self.children: list[dict[str, Any]] = []
         self.df: Counter = Counter()
+        self.bigram_df: Counter = Counter()
         self.doc_keywords: dict[str, set[str]] = {}
+        self._total_child_tokens: int = 0
+        self.embedder: BaseEmbeddingProvider = embedding_provider or get_embedding_provider()
+        self.vec_index = SqliteVecIndex(db_path=vec_db_path, dim=self.embedder.dim)
+
+    @property
+    def avg_child_len(self) -> float:
+        if not self.children:
+            return 1.0
+        return max(1.0, self._total_child_tokens / len(self.children))
 
     def get_corpus_keywords(self) -> set[str]:
         corpus_kw: set[str] = set()
@@ -74,7 +173,7 @@ class ParentChildVectorStore:
         if total == 0:
             return 1.0
         n = self.df.get(word, 0)
-        return math.log((total - n + 0.5) / (n + 0.5) + 1.0) + 1.0
+        return math.log((total - n + 0.5) / (n + 0.5) + 1.0)
 
     def _split_into_chunks(self, text: str, chunk_size: int = 500) -> list[str]:
         paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
@@ -113,17 +212,49 @@ class ParentChildVectorStore:
         for child in self.children:
             if child["parent_id"].startswith(f"{doc_id}_p"):
                 self.df.subtract(child["vector"].keys())
+                self.bigram_df.subtract(child.get("bigrams", {}).keys())
+                self._total_child_tokens = max(0, self._total_child_tokens - child.get("length", 0))
             else:
                 new_children.append(child)
         self.children = new_children
         self.df += Counter()
-        if doc_id in self.doc_keywords:
-            del self.doc_keywords[doc_id]
+        self.bigram_df += Counter()
+        self.doc_keywords.pop(doc_id, None)
+        self.vec_index.delete_doc(doc_id)
 
-    def add_document(self, doc_id: str, title: str, text: str) -> tuple[int, int]:
+    @staticmethod
+    def _resolve_page_number(chunk_text: str, page_spans: Optional[list[tuple[int, str]]]) -> Optional[int]:
+        if not page_spans:
+            return None
+        snippet = chunk_text[:60].strip()
+        if not snippet:
+            return page_spans[0][0]
+        for p_num, p_text in page_spans:
+            if snippet in p_text:
+                return p_num
+        # Fallback to largest token overlap across pages
+        words = set(re.findall(r"\b[a-zA-Z0-9]{4,}\b", chunk_text.lower()))
+        if not words:
+            return None
+        best_page = page_spans[0][0]
+        best_hits = -1
+        for p_num, p_text in page_spans:
+            p_low = p_text.lower()
+            hits = sum(1 for w in words if w in p_low)
+            if hits > best_hits:
+                best_hits = hits
+                best_page = p_num
+        return best_page
+
+    def add_document(
+        self,
+        doc_id: str,
+        title: str,
+        text: str,
+        page_spans: Optional[list[tuple[int, str]]] = None,
+    ) -> tuple[int, int]:
         self.remove_document(doc_id)
 
-        # Extract dynamic corpus keywords from title and salient document vocabulary
         kw_set: set[str] = set()
         for w in re.findall(r"\b[a-zA-Z0-9_]{3,}\b", title.lower()):
             if w not in STOPWORDS:
@@ -131,24 +262,37 @@ class ParentChildVectorStore:
                 kw_set.add(_stem(w))
 
         words = [w for w in re.findall(r"\b[a-zA-Z0-9_]{4,}\b", text.lower()) if w not in STOPWORDS]
-        word_counts = Counter(words)
-        for w, cnt in word_counts.items():
+        for w, cnt in Counter(words).items():
             if cnt >= 2:
                 kw_set.add(w)
                 kw_set.add(_stem(w))
-
         self.doc_keywords[doc_id] = kw_set
 
         parent_texts = self._split_into_chunks(text, chunk_size=500)
         num_parents = 0
         num_children = 0
+        current_section = "General Policy"
+
+        child_batch_records: list[tuple[str, str]] = []
+        child_objs: list[dict[str, Any]] = []
+
         for p_idx, p_text in enumerate(parent_texts):
+            sec_match = _SECTION_RE.search(p_text)
+            if sec_match:
+                current_section = re.sub(r"\s+", " ", sec_match.group(1)).strip()[:90]
+
+            page_num = self._resolve_page_number(p_text, page_spans)
             parent_id = f"{doc_id}_p{p_idx}"
+            citation = f"{title} ({parent_id}" + (f", p.{page_num}" if page_num else "") + ")"
+
             self.parents[parent_id] = {
                 "parent_id": parent_id,
                 "doc_id": doc_id,
                 "seq_idx": p_idx,
                 "title": title,
+                "section": current_section,
+                "page": page_num,
+                "citation": citation,
                 "text": p_text,
             }
             num_parents += 1
@@ -157,60 +301,186 @@ class ParentChildVectorStore:
             for c_idx, c_text in enumerate(child_texts):
                 tokens = _tokenize(c_text)
                 tf = dict(Counter(tokens))
+                bigrams = dict(Counter(_extract_bigrams(tokens)))
                 child_id = f"{parent_id}_c{c_idx}"
-                self.children.append(
-                    {
-                        "child_id": child_id,
-                        "parent_id": parent_id,
-                        "text": c_text,
-                        "vector": tf,
-                    }
-                )
+
+                child_record = {
+                    "child_id": child_id,
+                    "parent_id": parent_id,
+                    "doc_id": doc_id,
+                    "title": title,
+                    "section": current_section,
+                    "text": c_text,
+                    "vector": tf,
+                    "bigrams": bigrams,
+                    "length": len(tokens),
+                }
+                child_objs.append(child_record)
+                child_batch_records.append((child_id, f"{current_section} {c_text}"))
+
                 self.df.update(tf.keys())
+                self.bigram_df.update(bigrams.keys())
+                self._total_child_tokens += len(tokens)
                 num_children += 1
+
+        if child_batch_records:
+            vectors = self.embedder.embed_batch([txt for _, txt in child_batch_records])
+            for child_record, (cid, _), vec in zip(child_objs, child_batch_records, vectors):
+                child_record["dense_vector"] = vec
+                self.children.append(child_record)
+                self.vec_index.upsert(cid, doc_id, vec)
+
         return num_parents, num_children
 
-    def score_child(self, query_tokens: list[str], child: dict[str, Any]) -> float:
-        if not query_tokens:
-            return 0.0
-        q_counts = Counter(query_tokens)
-        c_counts = child["vector"]
-        common = set(q_counts.keys()) & set(c_counts.keys())
-        if not common:
-            return 0.0
-
-        dot = sum(q_counts[w] * c_counts[w] * (self.get_idf(w) ** 2) for w in common)
-        norm1 = math.sqrt(sum((q_counts[w] * self.get_idf(w)) ** 2 for w in q_counts))
-        norm2 = math.sqrt(sum((c_counts[w] * self.get_idf(w)) ** 2 for w in c_counts))
-        if norm1 == 0.0 or norm2 == 0.0:
-            return 0.0
-        cosine = dot / (norm1 * norm2)
-        coverage = len(common) / len(q_counts)
-        return cosine * (0.5 + 0.5 * coverage)
-
     def resolve_tokens(self, tokens: list[str]) -> list[str]:
+        """Resolve minor spelling typos against indexed vocabulary using difflib."""
         resolved = []
+        vocab = self.df.keys()
         for tok in tokens:
             if tok in self.df:
                 resolved.append(tok)
             elif len(tok) >= 5:
-                matches = difflib.get_close_matches(tok, self.df.keys(), n=1, cutoff=0.8)
+                matches = difflib.get_close_matches(tok, vocab, n=1, cutoff=0.78)
                 resolved.append(matches[0] if matches else tok)
             else:
                 resolved.append(tok)
         return resolved
 
-    def retrieve(self, query: str, top_k: int = 3, expand_window: int = 1) -> list[dict[str, Any]]:
-        query_tokens = _tokenize(query)
+    def expand_query_tokens(self, raw_words: list[str], resolved_tokens: list[str]) -> list[str]:
+        """Append controlled domain synonym stems while keeping original token list intact for coverage."""
+        expanded = list(resolved_tokens)
+        seen = set(resolved_tokens)
+        for w in raw_words:
+            for syn in _SYNONYM_EXPANSIONS.get(w, ()):
+                syn_stem = _stem(syn)
+                if syn_stem not in seen and syn_stem in self.df:
+                    expanded.append(syn_stem)
+                    seen.add(syn_stem)
+        return expanded
+
+    def score_child_bm25(
+        self,
+        query_tokens: list[str],
+        expanded_tokens: list[str],
+        query_bigrams: list[str],
+        child: dict[str, Any],
+        k1: float = 1.5,
+        b: float = 0.75,
+    ) -> float:
+        """Compute Okapi BM25 + bigram overlap + distinctive query coverage on a child chunk."""
         if not query_tokens:
+            return 0.0
+
+        c_counts = child["vector"]
+        c_len = max(1, child.get("length", 1))
+        avg_len = self.avg_child_len
+
+        bm25 = 0.0
+        for tok in set(expanded_tokens):
+            tf = c_counts.get(tok, 0)
+            if tf == 0:
+                continue
+            idf = self.get_idf(tok) ** 1.25
+            weight = 1.0 if tok in query_tokens else 0.75
+            denom = tf + k1 * (1.0 - b + b * (c_len / avg_len))
+            bm25 += weight * idf * ((tf * (k1 + 1.0)) / denom)
+
+        if bm25 <= 0.0:
+            return 0.0
+
+        # Bigram phrase bonus
+        c_bigrams = child.get("bigrams", {})
+        bigram_hits = sum(1 for bg in set(query_bigrams) if bg in c_bigrams)
+        bigram_bonus = 1.0 + 0.18 * bigram_hits
+
+        # Distinctive coverage over original (pre-expansion) query tokens
+        total_q_idf = 0.0
+        matched_q_idf = 0.0
+        max_idf = math.log(len(self.children) + 1.5) + 0.5
+        for tok in set(query_tokens):
+            tok_idf = self.get_idf(tok) if tok in self.df else max_idf
+            total_q_idf += tok_idf
+            if tok in c_counts:
+                matched_q_idf += tok_idf
+            else:
+                # Credit synonym expansion only if that synonym actually matched in this chunk
+                for syn in _SYNONYM_EXPANSIONS.get(tok, ()):
+                    if _stem(syn) in c_counts:
+                        matched_q_idf += tok_idf * 0.85
+                        break
+
+        coverage = (matched_q_idf / total_q_idf) if total_q_idf > 0.0 else 0.0
+        # Saturate BM25 cleanly into [0, 1] and combine with IDF-weighted query coverage
+        bm25_norm = bm25 / (bm25 + 4.5)
+        return bm25_norm * bigram_bonus * (0.35 + 0.65 * coverage)
+
+    def score_child(self, query_tokens: list[str], child: dict[str, Any]) -> float:
+        """Backward-compatible wrapper scoring a child chunk from tokenized query terms."""
+        return self.score_child_bm25(
+            query_tokens=query_tokens,
+            expanded_tokens=query_tokens,
+            query_bigrams=_extract_bigrams(query_tokens),
+            child=child,
+        )
+
+    def is_out_of_domain_query(self, query: str) -> bool:
+        """Check whether query targets an unsupported non-deposit product absent from indexed bigrams."""
+        return _has_non_deposit_product_mismatch(query.lower(), df=self.df, bigram_df=self.bigram_df)
+
+    def retrieve(self, query: str, top_k: int = 3, expand_window: int = 1) -> list[dict[str, Any]]:
+        raw_words = re.findall(r"\b[a-zA-Z0-9_]+\b", query.lower())
+        raw_filtered = [w for w in raw_words if w not in STOPWORDS and len(w) > 1]
+        base_tokens = _tokenize(query)
+        if not base_tokens:
             return []
 
-        query_tokens = self.resolve_tokens(query_tokens)
-        scored_children = []
+        resolved_tokens = self.resolve_tokens(base_tokens)
+        expanded_tokens = self.expand_query_tokens(raw_filtered, resolved_tokens)
+        query_bigrams = _extract_bigrams(resolved_tokens)
+
+        # 1. Sparse BM25 pass
+        bm25_scores: dict[str, float] = {}
         for child in self.children:
-            score = self.score_child(query_tokens, child)
-            if score > 0.0:
-                scored_children.append((score, child))
+            s = self.score_child_bm25(resolved_tokens, expanded_tokens, query_bigrams, child)
+            if s > 0.0:
+                bm25_scores[child["child_id"]] = s
+
+        # 2. Dense semantic pass via sqlite-vec / embedding provider
+        expanded_query_text = query + " " + " ".join(t for t in expanded_tokens if t not in resolved_tokens)
+        q_vec = self.embedder.embed(expanded_query_text.strip())
+        dense_scores = self.vec_index.search(q_vec)
+
+        # 3. Reciprocal Rank Fusion (RRF) over top sparse + top dense candidates
+        bm25_ranked = sorted(bm25_scores.items(), key=lambda x: x[1], reverse=True)
+        dense_ranked = sorted(dense_scores.items(), key=lambda x: x[1], reverse=True)
+
+        rrf_k = 60.0
+        rrf_scores: dict[str, float] = {}
+        for rank, (cid, _) in enumerate(bm25_ranked[:40], start=1):
+            rrf_scores[cid] = rrf_scores.get(cid, 0.0) + (1.2 / (rrf_k + rank))
+        for rank, (cid, d_score) in enumerate(dense_ranked[:40], start=1):
+            if d_score >= 0.25:
+                rrf_scores[cid] = rrf_scores.get(cid, 0.0) + (0.8 / (rrf_k + rank))
+
+        if not rrf_scores and bm25_ranked:
+            for rank, (cid, _) in enumerate(bm25_ranked[:20], start=1):
+                rrf_scores[cid] = 1.0 / (rrf_k + rank)
+
+        oos_penalty = 0.30 if self.is_out_of_domain_query(query) else 1.0
+
+        child_map = {c["child_id"]: c for c in self.children}
+        scored_children: list[tuple[float, float, dict[str, Any]]] = []
+        for cid, rrf in rrf_scores.items():
+            child = child_map.get(cid)
+            if not child:
+                continue
+            b_score = bm25_scores.get(cid, 0.0)
+            d_score = dense_scores.get(cid, 0.0)
+            # Calibrated hybrid confidence score (used by 0.1500 relevance gate)
+            hybrid_score = (0.72 * b_score + 0.28 * max(0.0, d_score - 0.15)) * oos_penalty
+            # Scale slightly by RRF rank signal so multi-modal hits break ties cleanly
+            rank_sort_key = rrf * 10.0 + hybrid_score
+            scored_children.append((rank_sort_key, hybrid_score, child))
 
         scored_children.sort(key=lambda x: x[0], reverse=True)
 
@@ -218,7 +488,7 @@ class ParentChildVectorStore:
         seen_texts: set[str] = set()
         matched_parents: list[dict[str, Any]] = []
 
-        for score, child in scored_children:
+        for _, hybrid_score, child in scored_children:
             parent_id = child["parent_id"]
             if parent_id in seen_parents:
                 continue
@@ -230,9 +500,13 @@ class ParentChildVectorStore:
 
             seen_parents.add(parent_id)
             seen_texts.add(norm_text)
-            parent_info["score"] = score
 
-            # Surrounding chunk window expansion
+            cid = child["child_id"]
+            parent_info["score"] = round(hybrid_score, 4)
+            parent_info["bm25_score"] = round(bm25_scores.get(cid, 0.0), 4)
+            parent_info["dense_score"] = round(dense_scores.get(cid, 0.0), 4)
+            parent_info["rrf_score"] = round(rrf_scores.get(cid, 0.0), 6)
+
             if expand_window > 0:
                 doc_id = parent_info.get("doc_id", "")
                 seq_idx = parent_info.get("seq_idx", 0)
@@ -311,7 +585,8 @@ DEFAULT_POLICIES = [
 def get_default_vector_store() -> ParentChildVectorStore:
     from pathlib import Path
 
-    store = ParentChildVectorStore()
+    vec_db_path = os.getenv("VECTOR_DB_PATH", ":memory:")
+    store = ParentChildVectorStore(vec_db_path=vec_db_path)
     for policy in DEFAULT_POLICIES:
         store.add_document(
             doc_id=policy["doc_id"],
@@ -327,4 +602,3 @@ def get_default_vector_store() -> ParentChildVectorStore:
         ingest_policies_directory(store, policies_dir)
 
     return store
-
